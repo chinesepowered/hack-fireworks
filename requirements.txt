@@ -1,0 +1,6 @@
+# Install CPU torch first to avoid the multi-GB CUDA build (training runs remotely on Fireworks):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+fireworks-ai[training]==1.2.30
+numpy
+scipy
+matplotlib
