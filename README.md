@@ -82,9 +82,11 @@ trial record ─┘   Nemotron 3.5 Super VL + LoRA          │
 ```
 
 - **Prompt:** every system, ours and baselines, gets the identical system prompt and input (`capymatch/prompts.py`).
-- **Fine-tuning:** 2 epochs, LoRA rank 16, batch 32, peak LR 1e-4 with cosine decay. Loss only on the answer tokens.
-  The prompt is rendered with the model's official chat template with thinking disabled (`capymatch/nemotron.py`).
-- **Checkpoint choice:** made on a dev split of 5 held-out 2021 patients, never on test.
+- **Fine-tuning:** 3,000 pairs (1,000 per label), 2 epochs, LoRA rank 16, batch 32, peak LR 1e-4 with cosine decay,
+  loss only on the answer tokens. About 19 minutes and 5.4M training tokens on Fireworks serverless training. The prompt
+  is rendered with the model's official chat template with thinking disabled (`capymatch/nemotron.py`).
+- **Checkpoint choice:** made on a dev split of 5 held-out 2021 patients, never on test. Epoch 1 won (77.5% vs 75.8% dev accuracy),
+  and only that checkpoint was scored on test. It is also promoted to a deployable Fireworks model (`capymatch-nemotron-e1`).
 
 ## Evaluation method
 
