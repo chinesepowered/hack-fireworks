@@ -12,7 +12,7 @@ significantly ahead of GPT-6 Luna, Nemotron 3 Ultra, and its own zero-shot base.
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=TWhJ-6mLXdY"><img src="video/capymatch_demo_thumb.png" alt="CapyMatch demo video on YouTube" width="640"></a><br>
-  <b><a href="https://www.youtube.com/watch?v=TWhJ-6mLXdY">▶ Watch the 87-second demo on YouTube</a></b> ·
+  <b><a href="https://www.youtube.com/watch?v=TWhJ-6mLXdY">▶ Watch the demo on YouTube</a></b> ·
   <a href="SUBMISSION.md">Submission notes</a> · <a href="#try-it">Try it</a> · <a href="#reproduce">Reproduce</a>
 </p>
 

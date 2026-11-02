@@ -58,5 +58,5 @@ Paste-ready text for the Fireworks: Deploy submission form. All numbers come fro
 
 - **Repo:** https://github.com/chinesepowered/hack-fireworks (setup and reproduction steps in the README; all
   predictions committed, so `make evaluate` reproduces every number offline).
-- **Demo video:** https://www.youtube.com/watch?v=TWhJ-6mLXdY (87 s; the same file is in the repo at `video/capymatch_demo.mp4`).
+- **Demo video:** https://www.youtube.com/watch?v=TWhJ-6mLXdY (the latest cut is also in the repo at `video/capymatch_demo.mp4`).
 - **Fireworks model:** `accounts/clai74-1172e7/models/capymatch-c9k-final` (promoted LoRA, deployable).
