@@ -25,7 +25,8 @@
   },
   "promoted_models": {
     "e1": "accounts/clai74-1172e7/models/capymatch-nemotron-e1",
-    "e2": "accounts/clai74-1172e7/models/capymatch-nemotron-e2"
+    "e2": "accounts/clai74-1172e7/models/capymatch-nemotron-e2",
+    "c9k": "accounts/clai74-1172e7/models/capymatch-c9k-final"
   },
   "c9k-e1": {
     "path": "clai74-1172e7/run-b17b592ec83741348d7f03beb39e892a/c9k-e1-c6bf5f42",
@@ -38,6 +39,5 @@
     "batch_size": 32,
     "train_rows": 9000,
     "train_tokens_per_epoch": 8255606
-  },
-  "promoted_model": "{'baseModelDetails': None, 'calibrated': False, 'cluster': '', 'contextLength': 0, 'conversationConfig': None, 'createTime': '2026-11-02T20:49:52.589997592Z', 'defaultDraftModel': '', 'defaultDraftTokenCount': 0, 'defaultSamplingParams': {}, 'deployedModelRefs': [], 'deprecationDate': None, 'description': '', 'displayName': '', 'enableVisionEncoderTuning': False, 'encryptionState': 'ENCRYPTION_STATE_PLAINTEXT', 'fineTuningJob': 'accounts/fireworks/rlorTrainerJobs/st-nvidia-nemotron-3p5-super-vl-120b-prod-0-638-716-01a1962c-0', 'githubUrl': '', 'huggingFaceUrl': '', 'importedFrom': '', 'kind': 'HF_PEFT_ADDON', 'name': 'accounts/clai74-1172e7/models/capymatch-c9k-final', 'peftDetails': {'baseModel': 'accounts/fireworks/models/nvidia-nemotron-3p5-super-vl-120b-a12b-bf16', 'baseModelType': 'nemotron_h_omni', 'mergeAddonModelName': '', 'r': 16, 'targetModules': ['down_proj', 'fc1_latent_proj', 'fc2_latent_proj', 'in_proj', 'k_proj', 'o_proj', 'out_proj', 'q_proj', 'up_proj', 'v_proj', 'w1', 'w2']}, 'public': False, 'rlLoraTunable': True, 'rlTunable': False, 'serverlessModes': [], 'snapshotType': 'FULL_SNAPSHOT', 'state': 'READY', 'status': {'code': 'OK', 'message': ''}, 'supervisedLoraTunable': True, 'supportsImageInput': True, 'supportsLora': False, 'supportsServerless': False, 'supportsServerlessLora': False, 'supportsServerlessTraining': False, 'supportsTools': False, 'teftDetails': None, 'trainingContextLength': 0, 'updateTime': '2026-11-02T20:49:52.589997592Z', 'useHfApplyChatTemplate': False, 'useTrainingV2': True}"
+  }
 }

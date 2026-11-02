@@ -120,9 +120,9 @@ def main() -> None:
             promotable.sort(key=lambda r: r["createTime"])
             target = promotable[-1]
             model = fw.promote_session_checkpoint(name=target["name"], output_model_id=f"capymatch-{args.tag}-final", base_model=BASE_MODEL)
-            ckpts["promoted_model"] = str(getattr(model, "name", model))
+            ckpts.setdefault("promoted_models", {})[args.tag] = model.get("name") if isinstance(model, dict) else str(model)
             ckpts_path.write_text(json.dumps(ckpts, indent=2))
-            print(f"promoted {target['name']} -> {ckpts['promoted_model']}", flush=True)
+            print(f"promoted {target['name']} -> {ckpts['promoted_models'][args.tag]}", flush=True)
         except Exception as e:  # promotion is a convenience for later deployment; eval does not need it
             print(f"promotion skipped: {e!r}", flush=True)
     print(f"done in {(time.time() - t_start)/60:.1f} min", flush=True)

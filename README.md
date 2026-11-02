@@ -1,33 +1,206 @@
-<p align="center"><img src="assets/banner.png" alt="CapyMatch: a capybara in scrubs holding a clipboard" width="820"></p>
+<p align="center"><img src="assets/banner.png" alt="CapyMatch banner: a capybara in scrubs holding a clipboard" width="820"></p>
 
 # CapyMatch
 
-**Clinical-trial pre-screening with a fine-tuned NVIDIA Nemotron on Fireworks.**
-CapyMatch reads a patient note and a ClinicalTrials.gov record and says whether the patient is
-**eligible**, **excluded**, or **not relevant**, the way a research coordinator pre-screens charts.
-We fine-tuned NVIDIA Nemotron 3.5 Super VL with LoRA on Fireworks serverless training and compared it with
-OpenAI's flagship and low-cost models on the same held-out patients.
+CapyMatch pre-screens patients for clinical trials. Given a patient note and a ClinicalTrials.gov record, it decides
+whether the patient is **eligible**, **excluded**, or **not relevant**, and explains the criterion that decided it. We
+fine-tuned **NVIDIA Nemotron 3.5 Super VL** with LoRA on 9,000 expert-judged patient–trial pairs using **Fireworks
+serverless training**, and run **NVIDIA Nemotron 3 Ultra on Fireworks** to write a one-line reason for the
+coordinator. On 900 held-out pairs from 50 patients the model never saw, CapyMatch is the most accurate system we tested:
+**74.1%**. That is statistically tied with OpenAI's flagship GPT-6.1 Sol (72.1%) at **about a quarter of the cost**, and
+significantly ahead of GPT-6 Luna, Nemotron 3 Ultra, and its own zero-shot base.
 
-**Demo video:** [`video/capymatch_demo.mp4`](video/capymatch_demo.mp4) (narrated, under 90 s) · **Try it:** `python -m capymatch.screen` (see [below](#screen-a-patient-against-live-trials)) · **Submission notes:** [`SUBMISSION.md`](SUBMISSION.md)
+<p align="center">
+  <a href="video/capymatch_demo.mp4"><img src="video/capymatch_demo_thumb.png" alt="CapyMatch demo video title card" width="640"></a><br>
+  <b><a href="video/capymatch_demo.mp4">▶ Watch the 87-second demo</a></b> ·
+  <a href="SUBMISSION.md">Submission notes</a> · <a href="#try-it">Try it</a> · <a href="#reproduce">Reproduce</a>
+</p>
 
-<!-- RESULTS -->
-## Results
+## The problem
 
-On **900 held-out patient–trial pairs from 50 patients the model never saw** (TREC Clinical Trials 2022):
+- **Most clinical trials miss their enrollment targets**, and finding eligible patients is one of the main reasons.
+- **Matching is manual.** A research coordinator reads each patient's chart against each candidate trial's eligibility
+  criteria. That can mean dozens of inclusion and exclusion rules per trial, across hundreds of open trials.
+- **LLMs can read criteria, but the economics and the data don't fit.** Frontier pricing multiplies with patients ×
+  trials, and many hospitals can't send patient records to a closed API. Screening needs a model that is accurate,
+  cheap per check, and deployable where the data lives.
 
-- **The most accurate system we tested, at about a quarter of the frontier's price.** CapyMatch scores **74.1%**
-  vs **72.1%** for GPT-6.1 Sol, OpenAI's flagship: +2.0 pts (95% CI -1.0 to +5.2, p = 0.19). That margin is not statistically significant,
-  so the honest claim is **parity with the frontier at $0.47 vs $1.80 per 1,000 screenings
-  (3.8× cheaper)**.
-- **Significantly better than the other baselines:** GPT-6 Luna +3.3 pts (95% CI +0.7 to +6.5, p = 0.022), Nemotron 3 Ultra +5.7 pts (95% CI +2.7 to +8.8, p = 0.00014).
-- **Fine-tuning is what gets it there:** +4.8 pts (95% CI +2.9 to +6.7, p = 0.00075) over the same Nemotron model zero-shot.
-- **Finds the most eligible patients:** 79% recall on `eligible` (GPT-6.1 Sol 72%,
-  GPT-6 Luna 69%), at lower precision (72% vs 79%).
-  That is the right tradeoff for pre-screening, where a coordinator confirms every flagged match.
-- **Knows when it is sure:** on the 70% of pairs where it is most confident, CapyMatch is **82.1%** accurate
-  (50%: 87.1%), so a site can auto-screen the bulk and send the rest to a person.
+## Our solution
+
+- **A specialized screener.** We LoRA fine-tuned NVIDIA Nemotron 3.5 Super VL on expert judgments from the TREC Clinical
+  Trials benchmark. Super VL is an open-weights mixture-of-experts model with 120B parameters, 12B active per token.
+  Each check reads the patient note and trial record and emits a single label, about 8 output tokens. A confidence score
+  comes from the label token's probability.
+- **Explanations a coordinator can verify.** NVIDIA Nemotron 3 Ultra turns each call into one sentence that cites the
+  deciding criterion, for example *"Patient is 47, below the trial's minimum age of 60."*
+- **Selective screening.** Confidence lets a site auto-screen most pairs and route the rest to people. On its 70%
+  most-confident pairs, CapyMatch is 82.1% accurate.
+- **Runs today:** a CLI that screens a patient against live ClinicalTrials.gov records, a demo page, and a promoted LoRA
+  model ready for a Fireworks deployment.
+
+## Results at a glance
+
+On **900 held-out patient–trial pairs from 50 new patients** (TREC Clinical Trials 2022, 300 per label), with 95%
+confidence intervals from a patient-clustered bootstrap:
 
 <p align="center"><img src="results/chart.png" alt="Accuracy with 95% confidence intervals and cost per 1,000 screenings for each system" width="900"></p>
+
+| System | Accuracy (95% CI) | Eligible precision / recall | $ per 1,000 screenings |
+|---|---|---|---|
+| **CapyMatch: Nemotron 3.5 Super VL + LoRA (ours)** | **74.1%** (70.8–77.4) | 72% / **79%** | **$0.47** |
+| GPT-6.1 Sol (OpenAI flagship) | 72.1% (68.1–75.6) | 79% / 72% | $1.80 |
+| GPT-6 Luna (OpenAI low-cost tier) | 70.8% (66.5–74.5) | 82% / 69% | $0.13 |
+| Nemotron 3.5 Super VL, zero-shot | 69.3% (65.7–72.7) | 83% / 58% | $0.47 |
+| Nemotron 3 Ultra, zero-shot | 68.4% (64.5–72.2) | 81% / 65% | $1.78 |
+
+- **Frontier parity at about a quarter of the cost.** CapyMatch is +2.0 pts ahead of GPT-6.1 Sol (95% CI −1.0 to +5.2,
+  McNemar p = 0.19). That is not a significant difference, so we claim parity, at 3.8× lower cost.
+- **Significantly better than the other baselines:** +3.3 pts vs GPT-6 Luna (p = 0.022) and +5.7 pts vs Nemotron 3 Ultra
+  (p < 0.001).
+- **Fine-tuning is the lever:** +4.8 pts over the same model zero-shot (95% CI +2.9 to +6.7, p < 0.001).
+- **Finds the most eligible patients:** 79% recall on `eligible`, the highest of any system, at lower precision. That is
+  the right tradeoff for pre-screening, where a coordinator confirms every flagged match.
+
+Full tables (macro-F1, paired differences, latency, selective screening, and the 3k-pair ablation) are in
+[Detailed results](#detailed-results).
+
+## Sponsors used
+
+| Sponsor | What we used | Role in CapyMatch | Code |
+|---|---|---|---|
+| **Fireworks AI** | Serverless Training: LoRA SFT with the Training SDK (`fireworks-ai[training]`) | Fine-tuned the screener in two runs (3k and 9k pairs), about 20 minutes each, with no GPUs to provision | [`finetune.py`](capymatch/finetune.py) |
+| | Serverless sampling (training pool) | Scored the base model and every checkpoint on dev and test without a deployment; token log-probs give the confidence score | [`run_sampler.py`](capymatch/run_sampler.py) |
+| | Serverless inference (OpenAI-compatible chat completions) | Runs Nemotron 3 Ultra for the coordinator explanations, and as a zero-shot baseline | [`explain.py`](capymatch/explain.py), [`run_chat.py`](capymatch/run_chat.py) |
+| | Checkpoint promotion | Saved the chosen LoRA as a deployable Fireworks model, `capymatch-c9k-final` | [`finetune.py`](capymatch/finetune.py) |
+| **NVIDIA** | Nemotron 3.5 Super VL 120B-A12B (BF16) | The model we fine-tuned, which is CapyMatch itself | [`nemotron.py`](capymatch/nemotron.py) |
+| | Nemotron 3 Ultra 550B-A55B (NVFP4) | Writes the one-line, criterion-citing explanation; also a zero-shot baseline | [`explain.py`](capymatch/explain.py) |
+
+Not sponsors, listed for transparency: OpenAI GPT-6.1 Sol and GPT-6 Luna (baselines only), ElevenLabs (video
+narration), and public data from TREC (NIST) and ClinicalTrials.gov (U.S. National Library of Medicine).
+
+## Fireworks AI
+
+Everything CapyMatch trains, evaluates, and serves runs on Fireworks. We never provisioned a GPU.
+
+### Serverless Training: LoRA fine-tuning
+
+- **Our own training loop on the Fireworks Training SDK** ([`capymatch/finetune.py`](capymatch/finetune.py)):
+  1. `FiretitanServiceClient` connects to `/training/v1/serverless`.
+  2. `create_lora_training_client(rank=16)` opens a LoRA run.
+  3. Each step calls `forward_backward(batch, "cross_entropy")` and `optim_step(AdamParams)`.
+  4. `save_weights_for_sampler()` saves a checkpoint after each epoch.
+- **Loss on the decision only.** Prompts use Nemotron's official chat template with thinking disabled. Loss weights are 1
+  only on the answer tokens (`{"label": ...}<|im_end|>`), so the model learns the decision, not the prompt.
+- **Hyperparameters:** batch 32, Adam (β1 0.9, β2 0.95), peak LR 1e-4 with a 6-step warmup and cosine decay. Per-step
+  loss is logged to `results/train_log_*.jsonl`.
+
+| Run | Training pairs | Epochs | Steps | Training tokens | Wall time | Dev accuracy |
+|---|---|---|---|---|---|---|
+| `capy` | 3,000 | 2 | 188 | 5.4M | 19 min | 77.5% (epoch 1), 75.8% (epoch 2) |
+| **`c9k` (CapyMatch)** | 9,000 | 1 | 282 | 8.3M | 21 min | **79.2%** |
+
+### Serverless sampling for evaluation
+
+- **Scoring without a deployment** ([`capymatch/run_sampler.py`](capymatch/run_sampler.py)):
+  - `create_sampling_client(base_model=...)` scores the zero-shot base model.
+  - `create_sampling_client(model_path=<checkpoint>)` scores each fine-tuned checkpoint.
+  - Both use greedy decoding and stop on `<|im_end|>`.
+  - Checkpoints could be sampled from a separate process after training finished.
+- **Confidence comes free.** The sampler returns per-token log-probabilities, and the probability of the label's first
+  token is CapyMatch's confidence score. That score drives selective screening.
+- **Clean selection.** Checkpoints were chosen on the dev split only, and each reported model was scored on test once.
+
+### Serverless inference
+
+- Nemotron 3 Ultra runs on Fireworks' OpenAI-compatible chat completions endpoint, both as a zero-shot baseline (900
+  test pairs) and as the explanation writer ([`capymatch/explain.py`](capymatch/explain.py)).
+- The runner records token usage, client latency, and the `fireworks-server-processing-time` header for every call
+  ([`capymatch/run_chat.py`](capymatch/run_chat.py)).
+
+### From checkpoint to deployment
+
+`promote_session_checkpoint` turned the dev-chosen checkpoint into a deployable LoRA model, `capymatch-c9k-final`. A
+site would serve it with `firectl deployment create <model> --deployment-shape default`, which merges the adapter into
+the base weights at deployment time.
+
+### Cost on Fireworks
+
+- **Both fine-tuning runs:** about **$32** (an estimate: 13.7M training tokens at $2.32 per 1M).
+- **Screening with the fine-tuned model:** **$0.47 per 1,000 patient–trial checks** at serverless-training sampling rates.
+- **Everything else on Fireworks** (zero-shot baselines, explanations, dev evaluations): about $3.
+
+## NVIDIA
+
+Both models in the CapyMatch pipeline are NVIDIA Nemotron models.
+
+### Nemotron 3.5 Super VL 120B-A12B: the fine-tuned screener
+
+- **Why this model.** It has open weights and a mixture-of-experts design with only 12B of its 120B parameters active per
+  token. It also takes images, which leaves room for scanned referral letters and lab reports later. Open weights matter
+  here: a hospital can run the same tuned model inside its own environment instead of sending patient records to a
+  closed API.
+- **How we tuned it.** We trained rank-16 LoRA adapters on 12 projection types across the network (`q_proj`, `k_proj`,
+  `v_proj`, `o_proj`, `in_proj`, `out_proj`, `up_proj`, `down_proj`, `w1`, `w2`, `fc1_latent_proj`,
+  `fc2_latent_proj`, per the promoted model's metadata). Training and serving use Nemotron's thinking-off mode, so each
+  screening is a direct label of about 8 tokens rather than a reasoning trace.
+- **What fine-tuning bought.** Zero-shot, Super VL scores 69.3%, below GPT-6 Luna. After LoRA on 9,000 pairs it scores
+  **74.1% (+4.8 pts, p < 0.001)**, the best of any system tested. It also beats Nemotron 3 Ultra, a model with more than
+  4× the total parameters, by 5.7 pts.
+- **Data scaling.** Tripling the training data from 3,000 to 9,000 pairs added +1.0 pt on test (not significant) and +1.7
+  pts on dev, so most of the gain comes from the first few thousand examples.
+
+### Nemotron 3 Ultra 550B-A55B (NVFP4): explanations and baseline
+
+- **Explanations.** Ultra reads the patient, the trial, and CapyMatch's label, and writes one sentence citing the deciding
+  criterion, for example *"Excluded because the patient has cataract indicated by loss of red reflex."* It runs with
+  reasoning on, because explanation quality matters more than speed here. In production it only needs to run on the
+  matches a coordinator actually reviews.
+- **Baseline.** Zero-shot, Ultra scores 68.4% and emits about 540 output tokens per screening, mostly reasoning. The
+  fine-tuned Super VL emits about 8. The smaller fine-tuned model is both more accurate and far cheaper to run.
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph DATA["Public data"]
+        direction LR
+        TR["TREC Clinical Trials 2021<br/>75 patients: train + dev"]
+        TE["TREC Clinical Trials 2022<br/>50 held-out test patients"]
+        CT["ClinicalTrials.gov<br/>2021 snapshot + live API"]
+        TR ~~~ TE ~~~ CT
+    end
+    subgraph TRAIN["Train on Fireworks Serverless Training"]
+        direction LR
+        SFT["LoRA SFT on NVIDIA<br/>Nemotron 3.5 Super VL<br/>9,000 pairs, rank 16, 21 min"] --> CK["Sampler checkpoints<br/>one per epoch and run"] --> DEV{"Pick best<br/>on dev"} --> PM["Promoted LoRA model<br/>capymatch-c9k-final"]
+    end
+    subgraph SERVE["Screen on Fireworks serverless"]
+        direction LR
+        IN["Patient note<br/>+ trial record"] --> SC["CapyMatch screener<br/>fine-tuned Super VL<br/>about 8 output tokens"] --> LB["Label + confidence<br/>eligible, excluded,<br/>not relevant"] --> EX["NVIDIA Nemotron 3 Ultra<br/>one-line reason citing<br/>the deciding criterion"] --> UI["Coordinator<br/>reviews the match"]
+        LB -.->|low confidence| HR["Human review"]
+    end
+    DATA -->|labeled patient-trial pairs| TRAIN
+    TRAIN -->|dev-chosen checkpoint| SERVE
+    DATA -->|patients and trials| SERVE
+```
+
+How every system was scored on the same footing:
+
+```mermaid
+flowchart LR
+    T["900 held-out pairs<br/>50 TREC 2022 patients<br/>300 per label"] --> P["Identical prompt<br/>for every system"]
+    P --> A["CapyMatch<br/>fine-tuned Super VL"]
+    P --> B["GPT-6.1 Sol, GPT-6 Luna<br/>OpenAI API"]
+    P --> C["Nemotron 3 Ultra,<br/>Super VL zero-shot<br/>Fireworks"]
+    A --> E["capymatch/evaluate.py<br/>clustered bootstrap CIs<br/>exact McNemar tests<br/>cost and latency"]
+    B --> E
+    C --> E
+    E --> R["results/ tables and chart"]
+```
+
+## Detailed results
+
+All systems were scored on the same 900 test pairs. Δ is CapyMatch minus the baseline, and p comes from an exact McNemar
+test. These tables are generated by `make evaluate` (source: [`results/results.md`](results/results.md)).
 
 | System | Type | Accuracy (95% CI) | Macro-F1 (95% CI) | Eligible P / R | $ per 1k screens | p50 latency |
 |---|---|---|---|---|---|---|
@@ -60,80 +233,37 @@ On **900 held-out patient–trial pairs from 50 patients the model never saw** (
 With the confidence threshold fixed on dev (keep 80% of dev pairs): 73% of test pairs auto-screened at 81.2% accuracy; overall 73.8% (95% CI 69.9–77.4), +1.7 pts vs GPT-6.1 Sol alone (95% CI +0.0 to +3.3, McNemar p=0.063) at $0.96 per 1k screens.
 
 **Tradeoffs we measured:**
-- GPT-6 Luna (OpenAI's low-cost tier) is cheaper per screening ($0.13 vs $0.47), but
-  3.3 pts less accurate (p = 0.02).
-- Latency: the fine-tuned model was sampled through Fireworks' shared *training* pool (p50 4.5s). A dedicated deployment
-  merges the LoRA into the base weights and serves at base-model speed (the base model's p50 was 0.9s on the same pool).
-- Escalating CapyMatch's least-confident pairs to GPT-6.1 Sol barely moves overall accuracy (73.8% with the dev-fixed threshold),
-  because Sol struggles on the same hard pairs. Confidence is better used to route work to a human reviewer.
-- More data helped only a little: the first run on 3,000 pairs scored 73.1% on test, and tripling to 9,000 pairs added
-  +1.0 pts (95% CI -0.2 to +2.2, p = 0.22).
+- **GPT-6 Luna is cheaper** per screening ($0.13 vs $0.47), but 3.3 pts less accurate (p = 0.022).
+- **Eligible precision is lower** than the OpenAI models' (72% vs 79% for GPT-6.1 Sol). CapyMatch errs toward flagging
+  possible matches.
+- **Latency was measured on Fireworks' shared training pool** (p50 4.5 s), not on a production deployment. A dedicated
+  deployment serves the merged model at base-model speed; the base model's p50 was 0.9 s on the same pool.
+- **Escalating to GPT-6.1 Sol barely helps.** Sending CapyMatch's least-confident pairs to Sol leaves overall accuracy
+  about the same, because Sol struggles on the same hard pairs. Confidence is better used to route work to a human.
 
-## Project overview
+## How we evaluated
 
-| | |
-|---|---|
-| **Task** | Patient–trial eligibility: given a patient description and a trial record, label the pair `eligible`, `excluded`, or `not_relevant` (TREC Clinical Trials definitions). |
-| **Intended user** | Research coordinators at hospitals, trial sites, and CROs who pre-screen patient charts against long eligibility lists; patient-matching services. |
-| **Why it matters** | Most clinical trials miss their enrollment targets, and screening is manual: every patient has to be checked against hundreds of trials, each with dozens of criteria. A screener that is accurate *and* cheap enough to run on every patient–trial pair changes what is feasible. |
-| **Approach** | LoRA SFT of **NVIDIA Nemotron 3.5 Super VL (120B MoE, 12B active)** on 9,000 expert-judged patient–trial pairs, trained and sampled on **Fireworks serverless training**. **Nemotron 3 Ultra** on Fireworks serverless writes a one-line, criterion-citing explanation for the coordinator. |
-
-## How it works
-
-```
-patient note ─┐
-              ├─► CapyMatch screener ─────────────► eligible / excluded / not_relevant
-trial record ─┘   Nemotron 3.5 Super VL + LoRA          │
-                  (Fireworks serverless training)       ▼
-                                              Nemotron 3 Ultra (Fireworks serverless)
-                                              "Excluded: trial requires age ≤ 24; patient is 34."
-```
-
-- **Prompt:** every system, ours and baselines, gets the identical system prompt and input (`capymatch/prompts.py`).
-- **Fine-tuning:** LoRA rank 16, batch 32, peak LR 1e-4 with cosine decay, loss only on the answer tokens. The prompt is
-  rendered with the model's official chat template with thinking disabled (`capymatch/nemotron.py`). Two runs on Fireworks
-  serverless training:
-  - `capy`: 3,000 pairs (1,000 per label), 2 epochs, about 19 minutes.
-  - `c9k`: 9,000 pairs (3,000 per label, a superset of the first set), 1 epoch, about 21 minutes and 8.3M training tokens.
-- **Checkpoint choice:** made on a dev split of 5 held-out 2021 patients, never on test. Dev accuracy was 77.5% for `capy` epoch 1,
-  75.8% for `capy` epoch 2, and **79.2% for `c9k`**, so `c9k` is CapyMatch. In full disclosure, we trained `c9k` after seeing the first
-  model's test score. The choice between checkpoints used dev only, and both models' test scores are reported above. The chosen
-  LoRA is promoted to a deployable Fireworks model (`capymatch-c9k-final`).
-
-## Evaluation method
-
-- **Data:** [TREC Clinical Trials](https://www.trec-cds.org/) 2021 and 2022. Synthetic patient descriptions written by
-  clinicians, real ClinicalTrials.gov records (2021-04-27 snapshot), and expert relevance judgments
+- **Data:** [TREC Clinical Trials](https://www.trec-cds.org/) 2021 and 2022. These are synthetic patient descriptions
+  written by clinicians, real ClinicalTrials.gov records (2021-04-27 snapshot), and expert judgments
   (2 = eligible, 1 = excluded, 0 = not relevant).
-- **Splits (no patient overlap):**
+- **Splits (no patient appears in more than one):**
   - train: 9,000 pairs from 70 TREC 2021 patients (the first run used a 3,000-pair subset)
   - dev: 120 pairs from 5 other 2021 patients
   - **test: 900 pairs from all 50 TREC 2022 patients**, label-balanced (300 per class), spread round-robin across patients
+- **Same input for everyone:** every system, ours and the baselines, gets the identical system prompt and input
+  ([`capymatch/prompts.py`](capymatch/prompts.py)). OpenAI models run with their default reasoning settings.
 - **Metrics:** accuracy, macro-F1, and precision/recall on `eligible`; cost per 1,000 screenings at list price from
   measured tokens; client-side latency.
-- **Uncertainty:** 95% confidence intervals from a **patient-clustered bootstrap** (2,000 draws over the 50 test
-  patients, since pairs from one patient are correlated). Paired differences use the same draws.
-  **Exact McNemar tests** on per-pair correctness.
-- **Baselines:** **GPT-6.1 Sol** (OpenAI's flagship), **GPT-6 Luna** (OpenAI's low-cost tier), **Nemotron 3 Ultra**
-  zero-shot (Fireworks serverless), and **Nemotron 3.5 Super VL** zero-shot (the same model before fine-tuning).
-  OpenAI models run with their default reasoning settings.
+- **Uncertainty:** 95% confidence intervals come from a **patient-clustered bootstrap** (2,000 draws over the 50 test
+  patients), because pairs from one patient are correlated. Paired differences use the same draws. Significance comes
+  from **exact McNemar tests** on per-pair correctness.
+- **Checkpoint selection:** done on dev, never on test. Dev accuracy was 77.5% (`capy` epoch 1), 75.8% (`capy` epoch 2),
+  and 79.2% (`c9k`). Full disclosure: we trained `c9k` after seeing the first model's test score. The choice between them
+  used dev only, and both test scores are reported.
 
-## Reproduce
+## Try it
 
-```bash
-git clone <this repo> && cd hack-fireworks
-cp .env.example .env              # add FIREWORKS_API_KEY, OPENAI_API_KEY (ELEVENLABS_API_KEY only for the video)
-make setup                        # venv + CPU torch + fireworks-ai[training]
-make data                         # TREC topics/judgments + ClinicalTrials.gov snapshot (~1.8 GB), builds data/*.jsonl
-make baselines                    # GPT-6.1 Sol, GPT-6 Luna, Nemotron 3 Ultra, Super VL zero-shot
-make finetune                     # two LoRA SFT runs on Fireworks serverless training (~40 min)
-make eval-tuned evaluate          # dev checkpoint choice, test predictions, metrics, CIs, chart
-make demo                         # demo/examples.json from real predictions; serve the repo root and open /demo/
-```
-
-All predictions are committed in `results/preds/`, so `make evaluate` reproduces every number above without any API calls.
-
-### Screen a patient against live trials
+Screen a patient against live ClinicalTrials.gov records with the fine-tuned model:
 
 ```bash
 .venv/bin/python -m capymatch.screen --patient-file note.txt --nct NCT03898388 NCT01031576
@@ -146,40 +276,63 @@ NCT01031576  excluded      Postural Analysis in Patients With Knee Osteoarthriti
     why: Patient is 47, below the trial's minimum age of 60.
 ```
 
-The CLI pulls each record from the ClinicalTrials.gov API, renders it the same way as the training data, labels it
-with the fine-tuned checkpoint (Fireworks serverless sampling), and asks Nemotron 3 Ultra for the one-line reason.
-The fine-tuned LoRA is also promoted to a deployable Fireworks model (`capymatch-c9k-final`) for dedicated serving.
+The CLI fetches each record from the ClinicalTrials.gov API, renders it exactly like the training data, labels it with
+the fine-tuned checkpoint through Fireworks serverless sampling, and asks Nemotron 3 Ultra for the one-line reason.
+
+For the demo page, run `python3 -m http.server 8000` in the repo root and open `http://localhost:8000/demo/`. It shows a
+held-out patient checked against six trials, with every system's verdict next to the expert label.
+
+## Reproduce
+
+```bash
+git clone https://github.com/chinesepowered/hack-fireworks && cd hack-fireworks
+cp .env.example .env              # add FIREWORKS_API_KEY and OPENAI_API_KEY (ELEVENLABS_API_KEY only for the video)
+make setup                        # venv + CPU torch + fireworks-ai[training]
+make data                         # TREC topics/judgments + ClinicalTrials.gov snapshot (~1.8 GB), builds data/*.jsonl
+make baselines                    # GPT-6.1 Sol, GPT-6 Luna, Nemotron 3 Ultra, Super VL zero-shot
+make finetune                     # two LoRA SFT runs on Fireworks serverless training (~40 min)
+make eval-tuned evaluate          # dev checkpoint choice, test predictions, metrics, CIs, chart
+make demo                         # demo/examples.json from real predictions
+make video                        # narrated demo video (needs ELEVENLABS_API_KEY)
+```
+
+All predictions are committed in `results/preds/`, so `make evaluate` reproduces every number in this README without
+any API calls.
 
 ## Repository layout
 
 | Path | What |
 |---|---|
-| `capymatch/data.py` | builds train/dev/test pairs from TREC + ClinicalTrials.gov |
-| `capymatch/prompts.py` | shared prompt and label parser |
-| `capymatch/run_chat.py` | OpenAI / Fireworks chat-completions runner (resumable, logs tokens and latency) |
+| `capymatch/data.py` | Builds train/dev/test pairs from TREC and ClinicalTrials.gov |
+| `capymatch/prompts.py` | Shared prompt and label parser |
+| `capymatch/run_chat.py` | OpenAI and Fireworks chat-completions runner (resumable; logs tokens and latency) |
 | `capymatch/finetune.py`, `capymatch/nemotron.py` | LoRA SFT on Fireworks serverless training |
-| `capymatch/run_sampler.py` | scores base and fine-tuned checkpoints through serverless sampling |
-| `capymatch/evaluate.py` | metrics, clustered bootstrap CIs, McNemar, cost, chart |
-| `capymatch/explain.py` | Nemotron 3 Ultra explanations for coordinators |
-| `demo/` | static demo page (`index.html` + `examples.json`) |
-| `video/` | narrated demo video pipeline (HTML scenes, ElevenLabs narration, ffmpeg) |
-| `assets/` | the CapyMatch capybara (original SVG art) |
+| `capymatch/run_sampler.py`, `capymatch/choose.py` | Scores base and fine-tuned checkpoints; dev-based checkpoint choice |
+| `capymatch/evaluate.py` | Metrics, clustered bootstrap CIs, McNemar tests, cost, chart |
+| `capymatch/explain.py`, `capymatch/screen.py` | Nemotron 3 Ultra explanations; live screening CLI |
+| `demo/` | Static demo page (`index.html` + `examples.json`) |
+| `video/` | Narrated demo video, captions, and its build pipeline (HTML scenes, ElevenLabs narration, ffmpeg) |
+| `assets/` | The CapyMatch capybara (original SVG art) and banner |
+| `results/` | Predictions, metrics, chart, training logs, checkpoint records |
 
 ## Limitations
 
-- **Labels are expert judgments with known noise.** TREC assessors' "excluded" vs. "not relevant" calls are not
-  always crisp, and a fine-tuned model partly learns those conventions. That is useful for matching TREC, but
-  it is not the same as clinical ground truth.
-- **Synthetic patient notes.** TREC topics are written by clinicians, not taken from real EHRs. Real charts are longer and messier.
-- **Balanced test set.** Real screening is dominated by `not_relevant` pairs. We report eligible precision and recall
-  so the screening tradeoff is visible.
+- **Labels are expert judgments with known noise.** TREC assessors' "excluded" vs "not relevant" calls are not always
+  crisp, and a fine-tuned model partly learns those conventions. That helps on TREC, but it is not clinical ground truth.
+- **Synthetic patient notes.** TREC topics are written by clinicians, not taken from real health records, which are
+  longer and messier.
+- **Balanced test set.** Real screening is dominated by `not_relevant` pairs. We report eligible precision and recall so
+  the screening tradeoff is visible.
 - **Serving cost.** The tuned LoRA is priced at Fireworks' serverless-training sampling rate, which includes a
   limited-time 50% discount. Production serving would use a dedicated deployment billed per GPU-hour, so cost per
-  screening then depends on utilization.
+  screening would depend on utilization.
 - **Decision support, not diagnosis.** CapyMatch flags candidates for a human coordinator; it does not decide enrollment.
 
 ## Credits
 
-Data: TREC Clinical Trials 2021/2022 (NIST) and ClinicalTrials.gov (U.S. National Library of Medicine).
-Models: NVIDIA Nemotron 3.5 Super VL and Nemotron 3 Ultra served and fine-tuned on Fireworks AI, and OpenAI GPT-6.1 Sol and GPT-6 Luna as baselines.
-Mascot and banner: original artwork made for this project.
+Built in one day for Fireworks: Deploy.
+- **Data:** TREC Clinical Trials 2021/2022 (NIST) and ClinicalTrials.gov (U.S. National Library of Medicine).
+- **Models:** NVIDIA Nemotron 3.5 Super VL and Nemotron 3 Ultra, fine-tuned and served on Fireworks AI. OpenAI GPT-6.1 Sol
+  and GPT-6 Luna were used as baselines only.
+- **Narration:** ElevenLabs.
+- **Mascot and banner:** original artwork made for this project.
