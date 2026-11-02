@@ -1,9 +1,11 @@
 """Pick the fine-tuned checkpoint on dev, then score only that checkpoint on test.
 
-Usage: python -m capymatch.choose [--tags capy-e1 capy-e2]
+Usage: python -m capymatch.choose --tags capy-e1 capy-e2 c9k-e1
 
-Writes results/checkpoint_choice.json and results/preds/capymatch__test.jsonl.
-The test set is touched once, by the dev-chosen checkpoint (ties go to the later epoch).
+Each tag is a key in results/checkpoints.json. Dev predictions go to results/preds/<tag>__dev.jsonl,
+the choice to results/checkpoint_choice.json, and the chosen checkpoint's test predictions to
+results/preds/capymatch__test.jsonl. The test set is touched once, by the dev-chosen checkpoint
+(ties go to the later tag in the list).
 """
 
 from __future__ import annotations
@@ -15,8 +17,8 @@ import sys
 from pathlib import Path
 
 
-def dev_accuracy(system: str) -> float:
-    rows = [json.loads(line) for line in open(f"results/preds/{system}__dev.jsonl")]
+def dev_accuracy(tag: str) -> float:
+    rows = [json.loads(line) for line in open(f"results/preds/{tag}__dev.jsonl")]
     return sum(r["pred"] == r["gold"] for r in rows) / len(rows)
 
 
@@ -26,17 +28,24 @@ def run(*args: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tags", nargs="+", default=["capy-e1", "capy-e2"])
+    ap.add_argument("--tags", nargs="+", default=["capy-e1", "capy-e2", "c9k-e1"])
+    ap.add_argument("--skip-test", action="store_true")
     args = ap.parse_args()
+    ckpts = json.loads(Path("results/checkpoints.json").read_text())
     acc = {}
     for tag in args.tags:
-        epoch = tag.split("-")[-1]
-        run("--system", f"capymatch-{epoch}", "--checkpoint", tag, "--split", "dev")
-        acc[epoch] = dev_accuracy(f"capymatch-{epoch}")
-    best = max(reversed(list(acc)), key=lambda e: acc[e])  # reversed: ties prefer the later epoch
-    Path("results/checkpoint_choice.json").write_text(json.dumps({"dev_accuracy": acc, "chosen": best}, indent=2))
-    print(f"dev accuracy {acc} -> chosen capy-{best}")
-    run("--system", "capymatch", "--checkpoint", f"capy-{best}", "--split", "test")
+        run("--system", tag, "--checkpoint", tag, "--split", "dev")
+        acc[tag] = dev_accuracy(tag)
+    best = max(reversed(args.tags), key=lambda t: acc[t])
+    choice = {
+        "candidates": {t: {"dev_accuracy": acc[t], "train_rows": ckpts[t].get("train_rows"), "epoch": ckpts[t].get("epoch")}
+                       for t in args.tags},
+        "chosen": best,
+    }
+    Path("results/checkpoint_choice.json").write_text(json.dumps(choice, indent=2))
+    print(f"dev accuracy {acc} -> chosen {best}")
+    if not args.skip_test:
+        run("--system", "capymatch", "--checkpoint", best, "--split", "test")
 
 
 if __name__ == "__main__":

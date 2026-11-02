@@ -55,7 +55,7 @@ def fetch_trial(nct: str) -> dict:
 def chosen_checkpoint() -> str:
     ckpts = json.loads(Path("results/checkpoints.json").read_text())
     choice = json.loads(Path("results/checkpoint_choice.json").read_text())["chosen"]
-    return ckpts[f"capy-{choice}"]["path"]
+    return ckpts[choice]["path"]
 
 
 def main() -> None:

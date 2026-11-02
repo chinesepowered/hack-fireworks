@@ -39,6 +39,7 @@ SYSTEMS = {
     "nemotron-3.5-lightning": ("Nemotron 3.5 Lightning, zero-shot", "open, Fireworks serverless", "nemotron-3.5-lightning"),
     "super-vl-base": ("Nemotron 3.5 Super VL, zero-shot", "open, Fireworks serverless sampling", "nemotron-3.5-super-vl"),
     "capymatch": ("CapyMatch (Super VL + LoRA, ours)", "open + fine-tuned on Fireworks", "nemotron-3.5-super-vl"),
+    "capymatch-3k": ("CapyMatch, 3k-pair LoRA (ablation)", "open + fine-tuned on Fireworks", "nemotron-3.5-super-vl"),
 }
 
 
@@ -99,6 +100,15 @@ def cost_usd(rows: list[dict], price_key: str) -> float:
     return total
 
 
+def chosen_train_rows() -> int:
+    """Training-set size of the dev-chosen checkpoint (falls back to data/train.jsonl)."""
+    try:
+        choice = json.loads(Path("results/checkpoint_choice.json").read_text())
+        return int(json.loads(Path("results/checkpoints.json").read_text())[choice["chosen"]]["train_rows"])
+    except (OSError, KeyError, ValueError):
+        return sum(1 for _ in open("data/train.jsonl"))
+
+
 def cascade_analysis(ours, present, ids, correct, metrics, draws, ci) -> dict | None:
     """Selective screening: CapyMatch auto-screens confident pairs, escalates the rest to the best closed model.
 
@@ -128,7 +138,7 @@ def cascade_analysis(ours, present, ids, correct, metrics, draws, ci) -> dict | 
     choice_path = Path("results/checkpoint_choice.json")
     if choice_path.exists():
         chosen = json.loads(choice_path.read_text())["chosen"]
-        dev = [json.loads(line) for line in open(PRED_DIR / f"capymatch-{chosen}__dev.jsonl")]
+        dev = [json.loads(line) for line in open(PRED_DIR / f"{chosen}__dev.jsonl")]
         dev_conf = np.array([r.get("confidence") or 0.0 for r in dev])
         t = float(np.quantile(dev_conf, 0.2))  # keep the most confident 80% of dev pairs
         keep = conf >= t
@@ -264,7 +274,7 @@ def main() -> None:
         "placeholder": False,
         "test_pairs": len(ids),
         "test_patients": int(len(uniq)),
-        "train_pairs": sum(1 for _ in open("data/train.jsonl")),
+        "train_pairs": chosen_train_rows(),
         "systems": [
             {"key": k, **{f: metrics[k][f] for f in ("name", "kind", "accuracy", "accuracy_ci", "macro_f1", "macro_f1_ci",
                                                   "eligible_precision", "eligible_recall", "cost_per_1k_usd",

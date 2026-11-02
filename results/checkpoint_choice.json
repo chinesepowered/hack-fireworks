@@ -1,7 +1,21 @@
 {
-  "dev_accuracy": {
-    "e1": 0.775,
-    "e2": 0.7583333333333333
+  "candidates": {
+    "capy-e1": {
+      "dev_accuracy": 0.775,
+      "train_rows": 3000,
+      "epoch": 1
+    },
+    "capy-e2": {
+      "dev_accuracy": 0.7583333333333333,
+      "train_rows": 3000,
+      "epoch": 2
+    },
+    "c9k-e1": {
+      "dev_accuracy": 0.7916666666666666,
+      "train_rows": 9000,
+      "epoch": 1
+    }
   },
-  "chosen": "e1"
+  "chosen": "c9k-e1",
+  "note": "c9k-e1 was trained after the capy-e1 test result was seen; the choice among checkpoints used dev accuracy only."
 }
