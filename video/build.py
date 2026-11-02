@@ -272,7 +272,7 @@ def capy(name: str) -> str:
 
 
 def deco() -> str:
-    dots = [(120, 140, 26, "#FFC7CF"), (1780, 120, 20, "#BFE7DF"), (1700, 930, 34, "#FFE2C2"), (220, 950, 22, "#BFE7DF"), (980, 70, 14, "#FFC7CF")]
+    dots = [(28, 770, 18, "#FFC7CF"), (1780, 120, 20, "#BFE7DF"), (1700, 930, 34, "#FFE2C2"), (220, 950, 22, "#BFE7DF"), (980, 70, 14, "#FFC7CF")]
     out = "".join(f'<div class="dot floaty" style="left:{x}px;top:{y}px;width:{2*r}px;height:{2*r}px;background:{c};animation-delay:-{i*0.9:.1f}s"></div>'
                   for i, (x, y, r, c) in enumerate(dots))
     out += '<div class="plus floaty" style="left:1830px;top:500px;color:#7FD3C5;animation-delay:-1.3s">+</div>'
