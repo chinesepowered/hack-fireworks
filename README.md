@@ -11,8 +11,8 @@ coordinator. On 900 held-out pairs from 50 patients the model never saw, CapyMat
 significantly ahead of GPT-6 Luna, Nemotron 3 Ultra, and its own zero-shot base.
 
 <p align="center">
-  <a href="video/capymatch_demo.mp4"><img src="video/capymatch_demo_thumb.png" alt="CapyMatch demo video title card" width="640"></a><br>
-  <b><a href="video/capymatch_demo.mp4">▶ Watch the 87-second demo</a></b> ·
+  <a href="https://www.youtube.com/watch?v=TWhJ-6mLXdY"><img src="video/capymatch_demo_thumb.png" alt="CapyMatch demo video on YouTube" width="640"></a><br>
+  <b><a href="https://www.youtube.com/watch?v=TWhJ-6mLXdY">▶ Watch the 87-second demo on YouTube</a></b> ·
   <a href="SUBMISSION.md">Submission notes</a> · <a href="#try-it">Try it</a> · <a href="#reproduce">Reproduce</a>
 </p>
 
