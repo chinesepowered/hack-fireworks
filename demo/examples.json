@@ -1,80 +1,88 @@
 {
-  "placeholder": true,
-  "patient": {
-    "id": "2022-11",
-    "text": "A 63-year-old man comes to the clinic for recent unintentional weight loss. The patient also has epigastric discomfort after meals. He has no known medical problems and takes no medications. His blood pressure is 130/75 and pulse rate is 88/min. He is not febrile. Upper endoscopy shows a lesion in the stomach that shows typical features of diffuse-type adenocarcinoma presenting with signet ring cells that do not form glands."
-  },
+  "placeholder": false,
   "systems": [
+    "GPT-6.1 Sol",
     "GPT-6 Luna",
-    "Nemotron 3 Ultra",
-    "CapyMatch (tuned Nemotron 3.5 Super VL)"
+    "Nemotron 3 Ultra, zero-shot",
+    "CapyMatch (Super VL + LoRA, ours)"
   ],
+  "patient": {
+    "id": "2022-17",
+    "text": "A 67-year-old man comes to the clinic with slowly worsening vision in both eyes. He is not able to drive at night, as the symptoms are worse at night. His pupils are normal in diameter both in the light and darkness. Other medical history is unremarkable. Ocular examination shows loss of the red reflex and blurry vision. Acuity testing shows 50/100 vision in both eyes with normal visual field testing. His blood pressure is 130/70 and pulse is 68/min. the other physical examinations are normal."
+  },
   "trials": [
     {
-      "nct_id": "NCT00222131",
-      "title": "Inhibition of Gastric Acid is the Key to Satisfactory Relief of Symptoms With Esomeprazole in NUD Patients",
+      "nct_id": "NCT03811964",
+      "title": "Photomotor Reflex to Evaluate the Role of the Non-visual Effects of Light in Neurological, Psychiatric and Ophthalmological Pathologies",
       "gold": "eligible",
       "preds": {
-        "GPT-6 Luna": "excluded",
-        "Nemotron 3 Ultra": "eligible",
-        "CapyMatch (tuned Nemotron 3.5 Super VL)": "eligible"
-      },
-      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
-    },
-    {
-      "nct_id": "NCT03788109",
-      "title": "Relationship Between Gastric Accommodation, TLESRs and Reflux in HV and in GERD With or Without Overlapping Dyspepsia",
-      "gold": "excluded",
-      "preds": {
+        "GPT-6.1 Sol": "eligible",
         "GPT-6 Luna": "eligible",
-        "Nemotron 3 Ultra": "excluded",
-        "CapyMatch (tuned Nemotron 3.5 Super VL)": "excluded"
+        "Nemotron 3 Ultra, zero-shot": "eligible",
+        "CapyMatch (Super VL + LoRA, ours)": "eligible"
       },
-      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+      "why": "The patient meets inclusion criteria (male, \u226518 years, able to consent) and does not meet exclusion criteria (vision is 5/10, not <5/10; no AMD, maculopathy, or other excluded conditions)."
     },
     {
-      "nct_id": "NCT02348229",
-      "title": "Effect of Enhanced Recovery After Surgery (ERAS) on C-reactive and Visceral Proteins",
-      "gold": "not_relevant",
-      "preds": {
-        "GPT-6 Luna": "not_relevant",
-        "Nemotron 3 Ultra": "excluded",
-        "CapyMatch (tuned Nemotron 3.5 Super VL)": "not_relevant"
-      },
-      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
-    },
-    {
-      "nct_id": "NCT03188406",
-      "title": "Gastric Cancer Precursor Lesions (GCPL) Study",
+      "nct_id": "NCT00069199",
+      "title": "Optical Coherence Tomography Comparative Study",
       "gold": "eligible",
       "preds": {
-        "GPT-6 Luna": "excluded",
-        "Nemotron 3 Ultra": "eligible",
-        "CapyMatch (tuned Nemotron 3.5 Super VL)": "eligible"
+        "GPT-6.1 Sol": "excluded",
+        "GPT-6 Luna": "not_relevant",
+        "Nemotron 3 Ultra, zero-shot": "excluded",
+        "CapyMatch (Super VL + LoRA, ours)": "eligible"
       },
-      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+      "why": "Patient meets all inclusion criteria: age \u226518, pupils can dilate to 6\u202fmm, and ocular media allow quality imaging."
     },
     {
-      "nct_id": "NCT00266721",
-      "title": "Efficacy of Pancrelipase on Postprandial Belching and Bloating.",
+      "nct_id": "NCT00894192",
+      "title": "Comprehensive Evaluation of Visual Function",
       "gold": "excluded",
       "preds": {
-        "GPT-6 Luna": "eligible",
-        "Nemotron 3 Ultra": "excluded",
-        "CapyMatch (tuned Nemotron 3.5 Super VL)": "excluded"
+        "GPT-6.1 Sol": "excluded",
+        "GPT-6 Luna": "excluded",
+        "Nemotron 3 Ultra, zero-shot": "excluded",
+        "CapyMatch (Super VL + LoRA, ours)": "excluded"
       },
-      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+      "why": "Patient is 67 years old, exceeding the trial's maximum age of 35 years."
     },
     {
-      "nct_id": "NCT01784237",
-      "title": "A Novel Anterior Rhinoscopic Scoring Scale to Predict Nasal Insertability Before Transnasal Endoscopy",
+      "nct_id": "NCT02627339",
+      "title": "Building a Database of Results From People Without Eye Problems",
+      "gold": "excluded",
+      "preds": {
+        "GPT-6.1 Sol": "not_relevant",
+        "GPT-6 Luna": "not_relevant",
+        "Nemotron 3 Ultra, zero-shot": "excluded",
+        "CapyMatch (Super VL + LoRA, ours)": "excluded"
+      },
+      "why": "Excluded because the patient has cataract indicated by loss of red reflex."
+    },
+    {
+      "nct_id": "NCT01742819",
+      "title": "Advanced Glaucoma Progression Study",
       "gold": "not_relevant",
       "preds": {
+        "GPT-6.1 Sol": "not_relevant",
         "GPT-6 Luna": "not_relevant",
-        "Nemotron 3 Ultra": "excluded",
-        "CapyMatch (tuned Nemotron 3.5 Super VL)": "not_relevant"
+        "Nemotron 3 Ultra, zero-shot": "not_relevant",
+        "CapyMatch (Super VL + LoRA, ours)": "not_relevant"
       },
-      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+      "why": "Patient lacks a clinical diagnosis of glaucoma and has normal visual fields, failing inclusion criteria."
+    },
+    {
+      "nct_id": "NCT02895594",
+      "title": "Outcome of Surgery for Idiopathic Macular Holes",
+      "gold": "not_relevant",
+      "preds": {
+        "GPT-6.1 Sol": "not_relevant",
+        "GPT-6 Luna": "not_relevant",
+        "Nemotron 3 Ultra, zero-shot": "not_relevant",
+        "CapyMatch (Super VL + LoRA, ours)": "not_relevant"
+      },
+      "why": "Patient does not have idiopathic macular hole, the trial's required condition."
     }
-  ]
+  ],
+  "note": "Illustrative patient from the held-out TREC 2022 test set; aggregate metrics are in results/."
 }

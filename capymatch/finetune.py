@@ -56,9 +56,10 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--tag", default="capy")
     ap.add_argument("--no-promote", action="store_true")
+    ap.add_argument("--train-file", default="data/train.jsonl")
     args = ap.parse_args()
 
-    rows = [json.loads(line) for line in open("data/train.jsonl")]
+    rows = [json.loads(line) for line in open(args.train_file)]
     if args.limit:
         rows = rows[: args.limit]
     tokenizer()

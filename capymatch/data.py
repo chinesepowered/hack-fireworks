@@ -158,6 +158,8 @@ def main() -> None:
     ap.add_argument("--dev-per-label", type=int, default=40)
     ap.add_argument("--test-per-label", type=int, default=300)
     ap.add_argument("--seed", type=int, default=13)
+    ap.add_argument("--train-only", action="store_true", help="only (re)build the training split")
+    ap.add_argument("--train-out", default="train", help="file stem for the training split (e.g. train_9k)")
     args = ap.parse_args()
 
     topics21, topics22 = load_topics(RAW / "topics2021.xml"), load_topics(RAW / "topics2022.xml")
@@ -172,6 +174,10 @@ def main() -> None:
         "dev": (balanced_sample(q21, dev_topics, dict.fromkeys(["eligible", "excluded", "not_relevant"], args.dev_per_label), args.seed), topics21, "2021"),
         "test": (balanced_sample(q22, test_topics, dict.fromkeys(["eligible", "excluded", "not_relevant"], args.test_per_label), args.seed), topics22, "2022"),
     }
+    if args.train_only:
+        splits = {args.train_out: splits["train"]}
+    elif args.train_out != "train":
+        splits[args.train_out] = splits.pop("train")
     needed = {nct for rows, _, _ in splits.values() for _, nct, _ in rows}
     print(f"loading {len(needed)} trials from the 2021-04-27 ClinicalTrials.gov snapshot ...")
     trials = load_trials(needed)

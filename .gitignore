@@ -14,3 +14,4 @@ __pycache__/
 .ipynb_checkpoints/
 video/build/
 *.log
+data/train_9k.jsonl

@@ -5,23 +5,23 @@
   "train_pairs": 3000,
   "systems": [
     {
-      "key": "super-vl-base",
-      "name": "Nemotron 3.5 Super VL, zero-shot",
-      "kind": "open, Fireworks serverless sampling",
-      "accuracy": 0.6933333333333334,
+      "key": "capymatch",
+      "name": "CapyMatch (Super VL + LoRA, ours)",
+      "kind": "open + fine-tuned on Fireworks",
+      "accuracy": 0.7311111111111112,
       "accuracy_ci": [
-        0.6570764216834001,
-        0.7273793129048423
+        0.6926503340757239,
+        0.7680419452640697
       ],
-      "macro_f1": 0.6953071042788169,
+      "macro_f1": 0.7278830658210138,
       "macro_f1_ci": [
-        0.6580595888011702,
-        0.7285125209497978
+        0.6882885387361384,
+        0.7651352165505099
       ],
-      "eligible_precision": 0.8254716981132075,
-      "eligible_recall": 0.5833333333333334,
-      "cost_per_1k_usd": 0.4673743333333329,
-      "latency_p50_s": 0.95,
+      "eligible_precision": 0.7230769230769231,
+      "eligible_recall": 0.7833333333333333,
+      "cost_per_1k_usd": 0.46740153333333273,
+      "latency_p50_s": 3.673,
       "unparsed": 0
     },
     {
@@ -65,6 +65,26 @@
       "unparsed": 0
     },
     {
+      "key": "super-vl-base",
+      "name": "Nemotron 3.5 Super VL, zero-shot",
+      "kind": "open, Fireworks serverless sampling",
+      "accuracy": 0.6933333333333334,
+      "accuracy_ci": [
+        0.6570764216834001,
+        0.7273793129048423
+      ],
+      "macro_f1": 0.6953071042788169,
+      "macro_f1_ci": [
+        0.6580595888011702,
+        0.7285125209497978
+      ],
+      "eligible_precision": 0.8254716981132075,
+      "eligible_recall": 0.5833333333333334,
+      "cost_per_1k_usd": 0.4673743333333329,
+      "latency_p50_s": 0.95,
+      "unparsed": 0
+    },
+    {
       "key": "nemotron-3-ultra",
       "name": "Nemotron 3 Ultra, zero-shot",
       "kind": "open, Fireworks serverless",
@@ -86,71 +106,87 @@
     }
   ],
   "headline": {
-    "ours": "super-vl-base",
+    "ours": "capymatch",
     "vs": "gpt-6.1-sol",
-    "acc_delta": -0.02777777777777779,
+    "acc_delta": 0.010000000000000009,
     "acc_delta_ci": [
-      -0.053334816462736384,
-      0.0
+      -0.02111228656273197,
+      0.04246807661612121
     ],
-    "macro_f1_delta": -0.022137266623633578,
+    "macro_f1_delta": 0.010438694918563307,
     "macro_f1_delta_ci": [
-      -0.04901191654097186,
-      0.00590344237378873
+      -0.021729448667402198,
+      0.044399351821790285
     ],
-    "ours_right_base_wrong": 70,
-    "ours_wrong_base_right": 95,
-    "mcnemar_p": 0.06137832710948886,
-    "cost_ratio": 3.846604993522926
+    "ours_right_base_wrong": 86,
+    "ours_wrong_base_right": 77,
+    "mcnemar_p": 0.5310454494607927,
+    "cost_ratio": 3.8463811439024997
   },
   "comparisons": {
     "gpt-6.1-sol": {
-      "acc_delta": -0.02777777777777779,
+      "acc_delta": 0.010000000000000009,
       "acc_delta_ci": [
-        -0.053334816462736384,
-        0.0
+        -0.02111228656273197,
+        0.04246807661612121
       ],
-      "macro_f1_delta": -0.022137266623633578,
+      "macro_f1_delta": 0.010438694918563307,
       "macro_f1_delta_ci": [
-        -0.04901191654097186,
-        0.00590344237378873
+        -0.021729448667402198,
+        0.044399351821790285
       ],
-      "ours_right_base_wrong": 70,
-      "ours_wrong_base_right": 95,
-      "mcnemar_p": 0.06137832710948886,
-      "cost_ratio": 3.846604993522926
+      "ours_right_base_wrong": 86,
+      "ours_wrong_base_right": 77,
+      "mcnemar_p": 0.5310454494607927,
+      "cost_ratio": 3.8463811439024997
     },
     "gpt-6-luna": {
-      "acc_delta": -0.014444444444444371,
+      "acc_delta": 0.023333333333333428,
       "acc_delta_ci": [
-        -0.04111225435669261,
-        0.013318904920458683
+        -0.0033296337402886067,
+        0.052462654532966946
       ],
-      "macro_f1_delta": -0.007686784451748863,
+      "macro_f1_delta": 0.024889177090448023,
       "macro_f1_delta_ci": [
-        -0.0359556424478012,
-        0.02143460956440163
+        -0.003180597538193927,
+        0.056331931804948665
       ],
-      "ours_right_base_wrong": 88,
-      "ours_wrong_base_right": 101,
-      "mcnemar_p": 0.3827845942503986,
-      "cost_ratio": 0.2794457642684227
+      "ours_right_base_wrong": 91,
+      "ours_wrong_base_right": 70,
+      "mcnemar_p": 0.11469594326965282,
+      "cost_ratio": 0.2794295021805903
     },
     "nemotron-3-ultra": {
-      "acc_delta": 0.008888888888888946,
+      "acc_delta": 0.046666666666666745,
       "acc_delta_ci": [
-        -0.018805309734513224,
-        0.03543743078626793
+        0.01672240802675584,
+        0.07847694849001945
       ],
-      "macro_f1_delta": 0.018158889072334983,
+      "macro_f1_delta": 0.05073485061453187,
       "macro_f1_delta_ci": [
-        -0.010240978200594214,
-        0.046365941340484336
+        0.019628355023366555,
+        0.08377887685316131
       ],
-      "ours_right_base_wrong": 95,
-      "ours_wrong_base_right": 87,
-      "mcnemar_p": 0.6039706597292289,
-      "cost_ratio": 3.8139164680987343
+      "ours_right_base_wrong": 109,
+      "ours_wrong_base_right": 67,
+      "mcnemar_p": 0.0019140644827520155,
+      "cost_ratio": 3.8136945207568163
+    },
+    "super-vl-base": {
+      "acc_delta": 0.0377777777777778,
+      "acc_delta_ci": [
+        0.015711364201297127,
+        0.058825163398692815
+      ],
+      "macro_f1_delta": 0.032575961542196885,
+      "macro_f1_delta_ci": [
+        0.008341509439573203,
+        0.0552915279581059
+      ],
+      "ours_right_base_wrong": 99,
+      "ours_wrong_base_right": 65,
+      "mcnemar_p": 0.009756084718005828,
+      "cost_ratio": 0.9999418059247562
     }
   },
   "notes": [
@@ -158,5 +194,67 @@
     "95% CIs: patient-clustered bootstrap, 2,000 draws. p-values: exact McNemar on per-pair correctness.",
     "Cost: list price x measured tokens (reasoning tokens included). Super VL priced at Fireworks serverless-training sampling rates.",
     "Latency is client-side wall time; the Super VL rows use the training sampler, not a production deployment."
-  ]
+  ],
+  "cascade": {
+    "escalate_to": "gpt-6.1-sol",
+    "escalate_name": "GPT-6.1 Sol",
+    "sweep_on_test": [
+      {
+        "coverage": 1.0,
+        "auto_accuracy": 0.7311111111111112,
+        "cascade_accuracy": 0.7311111111111112,
+        "cost_per_1k_usd": 0.46740153333333273
+      },
+      {
+        "coverage": 0.9,
+        "auto_accuracy": 0.7641975308641975,
+        "cascade_accuracy": 0.7311111111111112,
+        "cost_per_1k_usd": 0.6471819777777774
+      },
+      {
+        "coverage": 0.8,
+        "auto_accuracy": 0.7944444444444444,
+        "cascade_accuracy": 0.7333333333333333,
+        "cost_per_1k_usd": 0.826962422222222
+      },
+      {
+        "coverage": 0.7,
+        "auto_accuracy": 0.8285714285714286,
+        "cascade_accuracy": 0.7322222222222222,
+        "cost_per_1k_usd": 1.006742866666667
+      },
+      {
+        "coverage": 0.6,
+        "auto_accuracy": 0.85,
+        "cascade_accuracy": 0.7255555555555555,
+        "cost_per_1k_usd": 1.1865233111111115
+      },
+      {
+        "coverage": 0.5,
+        "auto_accuracy": 0.8711111111111111,
+        "cascade_accuracy": 0.7211111111111111,
+        "cost_per_1k_usd": 1.3663037555555562
+      }
+    ],
+    "dev_threshold": {
+      "threshold": 0.7224067145090604,
+      "test_coverage": 0.7088888888888889,
+      "auto_accuracy": 0.8260188087774295,
+      "escalated_accuracy_esc": 0.5076335877862596,
+      "escalated_accuracy_ours": 0.5,
+      "cascade_accuracy": 0.7333333333333333,
+      "cascade_accuracy_ci": [
+        0.6939181641205402,
+        0.7666666666666667
+      ],
+      "delta_vs_escalation_model": 0.012222222222222134,
+      "delta_ci": [
+        -0.003318675947431948,
+        0.02876425762045228
+      ],
+      "mcnemar_p_vs_escalation_model": 0.15240777196147803,
+      "cost_per_1k_usd": 0.9907623827160494,
+      "cost_ratio_vs_escalation_model": 1.8145667173151991
+    }
+  }
 }

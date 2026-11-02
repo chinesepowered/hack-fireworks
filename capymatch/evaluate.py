@@ -374,6 +374,12 @@ def plot(metrics: dict, order: list[str], ours: str) -> None:
         ax.text(c * 1.12, yi, f"${c:.2f}", va="center", ha="left", fontsize=10.5,
                 color=ink, fontweight="bold" if k == ours else "normal")
     ax.set_xlim(min(cost) / 2.5, max(cost) * 6)
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+
+    ticks = [t for t in (0.03, 0.1, 0.3, 1, 3, 10, 30) if min(cost) / 2.5 <= t <= max(cost) * 6]
+    ax.xaxis.set_major_locator(FixedLocator(ticks))
+    ax.xaxis.set_minor_locator(NullLocator())
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"${v:g}"))
     ax.set_xlabel("Cost per 1,000 screenings, USD (log scale)", color=ink2, fontsize=10)
 
     fig.suptitle("CapyMatch: clinical-trial eligibility screening (TREC Clinical Trials 2022)",

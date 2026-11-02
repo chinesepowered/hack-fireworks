@@ -9,6 +9,57 @@ We fine-tuned NVIDIA Nemotron 3.5 Super VL with LoRA on Fireworks serverless tra
 OpenAI's flagship and low-cost models on the same held-out patients.
 
 <!-- RESULTS -->
+## Results
+
+On **900 held-out patient–trial pairs from 50 patients the model never saw** (TREC Clinical Trials 2022):
+
+- **Frontier-level accuracy at about a quarter of the frontier's price.** CapyMatch scores **73.1%** vs
+  **72.1%** for GPT-6.1 Sol (difference +1.0 pts, 95% CI -2.1 to +4.2;
+  McNemar p = 0.53, a statistical tie) at **$0.47 vs $1.80 per 1,000 screenings (3.8× cheaper)**.
+- **Fine-tuning is what gets it there:** +3.8 pts over the same Nemotron model zero-shot (95% CI +1.6 to +5.9, p = 0.010)
+  and +4.7 pts over Nemotron 3 Ultra zero-shot (p = 0.002).
+- **Finds the most eligible patients:** 78% recall on `eligible` (GPT-6.1 Sol 72%, GPT-6 Luna 69%),
+  at lower precision (72% vs 79%). That is the right tradeoff for pre-screening, where a coordinator confirms every flagged match.
+- **Knows when it is sure:** on the 70% of pairs where it is most confident, CapyMatch is **82.9%** accurate
+  (50%: 87.1%), so a site can auto-screen the bulk and send the rest to a person.
+
+<p align="center"><img src="results/chart.png" alt="Accuracy with 95% confidence intervals and cost per 1,000 screenings for each system" width="900"></p>
+
+| System | Type | Accuracy (95% CI) | Macro-F1 (95% CI) | Eligible P / R | $ per 1k screens | p50 latency |
+|---|---|---|---|---|---|---|
+| **CapyMatch (Super VL + LoRA, ours)** | open + fine-tuned on Fireworks | **73.1%** (69.3–76.8) | 72.8 (68.8–76.5) | 72% / 78% | $0.47 | 3.7s |
+| GPT-6.1 Sol | closed frontier (OpenAI) | 72.1% (68.1–75.6) | 71.7 (67.7–75.2) | 79% / 72% | $1.80 | 1.4s |
+| GPT-6 Luna | closed, low-cost tier (OpenAI) | 70.8% (66.5–74.5) | 70.3 (65.8–74.1) | 82% / 69% | $0.13 | 1.6s |
+| Nemotron 3.5 Super VL, zero-shot | open, Fireworks serverless sampling | 69.3% (65.7–72.7) | 69.5 (65.8–72.9) | 83% / 58% | $0.47 | 0.9s |
+| Nemotron 3 Ultra, zero-shot | open, Fireworks serverless | 68.4% (64.5–72.2) | 67.7 (63.6–71.5) | 81% / 65% | $1.78 | 4.0s |
+
+| Ours vs | Accuracy Δ (95% CI) | Macro-F1 Δ (95% CI) | McNemar p | Cost ratio (baseline ÷ ours) |
+|---|---|---|---|---|
+| GPT-6.1 Sol | +1.0 pts (-2.1 to +4.2) | +1.0 (-2.2 to +4.4) | 0.53 | 3.8× |
+| GPT-6 Luna | +2.3 pts (-0.3 to +5.2) | +2.5 (-0.3 to +5.6) | 0.11 | 0.3× |
+| Nemotron 3 Ultra, zero-shot | +4.7 pts (+1.7 to +7.8) | +5.1 (+2.0 to +8.4) | 0.0019 | 3.8× |
+| Nemotron 3.5 Super VL, zero-shot | +3.8 pts (+1.6 to +5.9) | +3.3 (+0.8 to +5.5) | 0.0098 | 1.0× |
+
+**Selective screening** (CapyMatch auto-screens confident pairs; the rest go to GPT-6.1 Sol):
+
+| Auto-screened share | CapyMatch accuracy on auto-screened | Overall accuracy with escalation | $ per 1k screens |
+|---|---|---|---|
+| 100% | 73.1% | 73.1% | $0.47 |
+| 90% | 76.4% | 73.1% | $0.65 |
+| 80% | 79.4% | 73.3% | $0.83 |
+| 70% | 82.9% | 73.2% | $1.01 |
+| 60% | 85.0% | 72.6% | $1.19 |
+| 50% | 87.1% | 72.1% | $1.37 |
+
+With the confidence threshold fixed on dev (keep 80% of dev pairs): 71% of test pairs auto-screened at 82.6% accuracy; overall 73.3% (95% CI 69.4–76.7), +1.2 pts vs GPT-6.1 Sol alone (95% CI -0.3 to +2.9, McNemar p=0.15) at $0.99 per 1k screens.
+
+**Tradeoffs we measured:**
+- GPT-6 Luna (OpenAI's low-cost tier) is cheaper per screening ($0.13) and 2.3 pts less accurate,
+  a difference that is not statistically significant (p = 0.11).
+- Latency: the fine-tuned model was sampled through Fireworks' shared *training* pool (p50 3.7s). A dedicated deployment
+  merges the LoRA into the base weights and serves at base-model speed (the base model's p50 was 0.9s on the same pool).
+- Escalating CapyMatch's least-confident pairs to GPT-6.1 Sol barely moves overall accuracy (73.3% with the dev-fixed threshold),
+  because Sol struggles on the same hard pairs. Confidence is better used to route work to a human reviewer.
 
 ## Project overview
 
@@ -67,6 +118,23 @@ make demo                         # demo/examples.json from real predictions; op
 ```
 
 All predictions are committed in `results/preds/`, so `make evaluate` reproduces every number above without any API calls.
+
+### Screen a patient against live trials
+
+```bash
+.venv/bin/python -m capymatch.screen --patient-file note.txt --nct NCT03898388 NCT01031576
+```
+
+```
+NCT03898388  eligible      Correlating the OA Knee Microenvironment to Outcomes After Regenexx-SD
+    why: Meets inclusion criteria 3 and 4 (OA pain, swelling, functional disability, and exam findings) and age 35-85; no exclusion criteria met.
+NCT01031576  excluded      Postural Analysis in Patients With Knee Osteoarthritis
+    why: Patient is 47, below the trial's minimum age of 60.
+```
+
+The CLI pulls each record from the ClinicalTrials.gov API, renders it the same way as the training data, labels it
+with the fine-tuned checkpoint (Fireworks serverless sampling), and asks Nemotron 3 Ultra for the one-line reason.
+The fine-tuned LoRA is also promoted to a deployable Fireworks model (`capymatch-nemotron-e1`) for dedicated serving.
 
 ## Repository layout
 
