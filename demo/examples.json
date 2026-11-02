@@ -1,0 +1,80 @@
+{
+  "placeholder": true,
+  "patient": {
+    "id": "2022-11",
+    "text": "A 63-year-old man comes to the clinic for recent unintentional weight loss. The patient also has epigastric discomfort after meals. He has no known medical problems and takes no medications. His blood pressure is 130/75 and pulse rate is 88/min. He is not febrile. Upper endoscopy shows a lesion in the stomach that shows typical features of diffuse-type adenocarcinoma presenting with signet ring cells that do not form glands."
+  },
+  "systems": [
+    "GPT-6 Luna",
+    "Nemotron 3 Ultra",
+    "CapyMatch (tuned Nemotron 3.5 Super VL)"
+  ],
+  "trials": [
+    {
+      "nct_id": "NCT00222131",
+      "title": "Inhibition of Gastric Acid is the Key to Satisfactory Relief of Symptoms With Esomeprazole in NUD Patients",
+      "gold": "eligible",
+      "preds": {
+        "GPT-6 Luna": "excluded",
+        "Nemotron 3 Ultra": "eligible",
+        "CapyMatch (tuned Nemotron 3.5 Super VL)": "eligible"
+      },
+      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+    },
+    {
+      "nct_id": "NCT03788109",
+      "title": "Relationship Between Gastric Accommodation, TLESRs and Reflux in HV and in GERD With or Without Overlapping Dyspepsia",
+      "gold": "excluded",
+      "preds": {
+        "GPT-6 Luna": "eligible",
+        "Nemotron 3 Ultra": "excluded",
+        "CapyMatch (tuned Nemotron 3.5 Super VL)": "excluded"
+      },
+      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+    },
+    {
+      "nct_id": "NCT02348229",
+      "title": "Effect of Enhanced Recovery After Surgery (ERAS) on C-reactive and Visceral Proteins",
+      "gold": "not_relevant",
+      "preds": {
+        "GPT-6 Luna": "not_relevant",
+        "Nemotron 3 Ultra": "excluded",
+        "CapyMatch (tuned Nemotron 3.5 Super VL)": "not_relevant"
+      },
+      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+    },
+    {
+      "nct_id": "NCT03188406",
+      "title": "Gastric Cancer Precursor Lesions (GCPL) Study",
+      "gold": "eligible",
+      "preds": {
+        "GPT-6 Luna": "excluded",
+        "Nemotron 3 Ultra": "eligible",
+        "CapyMatch (tuned Nemotron 3.5 Super VL)": "eligible"
+      },
+      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+    },
+    {
+      "nct_id": "NCT00266721",
+      "title": "Efficacy of Pancrelipase on Postprandial Belching and Bloating.",
+      "gold": "excluded",
+      "preds": {
+        "GPT-6 Luna": "eligible",
+        "Nemotron 3 Ultra": "excluded",
+        "CapyMatch (tuned Nemotron 3.5 Super VL)": "excluded"
+      },
+      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+    },
+    {
+      "nct_id": "NCT01784237",
+      "title": "A Novel Anterior Rhinoscopic Scoring Scale to Predict Nasal Insertability Before Transnasal Endoscopy",
+      "gold": "not_relevant",
+      "preds": {
+        "GPT-6 Luna": "not_relevant",
+        "Nemotron 3 Ultra": "excluded",
+        "CapyMatch (tuned Nemotron 3.5 Super VL)": "not_relevant"
+      },
+      "why": "Placeholder explanation: the main thread will replace this with a real one-sentence rationale."
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="CapyMatch mascot, oops: not a match">
+  <title>CapyMatch mascot, oops: not a match</title>
+  <defs>
+    <radialGradient id="g-head" cx="45%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#E2B486"/>
+      <stop offset="55%" stop-color="#C99263"/>
+      <stop offset="100%" stop-color="#B27C4E"/>
+    </radialGradient>
+    <radialGradient id="g-muzzle" cx="50%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#BD8758"/>
+      <stop offset="100%" stop-color="#A9724A"/>
+    </radialGradient>
+    <linearGradient id="g-scrub" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8EDDD0"/>
+      <stop offset="45%" stop-color="#5FC9B9"/>
+      <stop offset="100%" stop-color="#45B2A2"/>
+    </linearGradient>
+    <radialGradient id="g-yuzu" cx="38%" cy="32%" r="70%">
+      <stop offset="0%" stop-color="#FFD58A"/>
+      <stop offset="60%" stop-color="#FFB23F"/>
+      <stop offset="100%" stop-color="#F29A2A"/>
+    </radialGradient>
+  </defs>
+  <!-- soft ground shadow -->
+  <ellipse cx="256" cy="488" rx="140" ry="13" fill="#000" opacity="0.08"/>
+  <!-- feet -->
+  <ellipse cx="200" cy="470" rx="36" ry="19" fill="#A9724A" stroke="#5B3A26" stroke-width="7"/>
+  <ellipse cx="312" cy="470" rx="36" ry="19" fill="#A9724A" stroke="#5B3A26" stroke-width="7"/>
+  <!-- chubby barrel body in scrubs -->
+  <path d="M150 334 C 124 384, 128 452, 180 468 L 332 468 C 384 452, 388 384, 362 334 C 332 302, 180 302, 150 334 Z"
+        fill="url(#g-scrub)" stroke="#5B3A26" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M172 444 Q 256 456 340 444" fill="none" stroke="#45B2A2" stroke-width="4" stroke-linecap="round"/>
+  <!-- V-neck showing fur -->
+  <path d="M216 312 L 256 360 L 296 312 Z" fill="#C99263" stroke="#5B3A26" stroke-width="5" stroke-linejoin="round"/>
+  <!-- stethoscope draped around the neck -->
+  <path d="M206 318 C 190 344, 192 372, 214 386" fill="none" stroke="#3E4C5E" stroke-width="7" stroke-linecap="round"/>
+  <path d="M306 318 C 322 344, 320 372, 298 386" fill="none" stroke="#3E4C5E" stroke-width="7" stroke-linecap="round"/>
+  <!-- clipboard hugged to the chest -->
+  <g transform="rotate(-5 256 412)">
+    <rect x="200" y="356" width="112" height="112" rx="14" fill="#D99A5B" stroke="#5B3A26" stroke-width="7" stroke-linejoin="round"/>
+    <rect x="212" y="370" width="88" height="88" rx="7" fill="#FFFDF7" stroke="#5B3A26" stroke-width="3.5"/>
+    <rect x="234" y="346" width="44" height="22" rx="8" fill="#CCD6E0" stroke="#5B3A26" stroke-width="5"/>
+    <path d="M222 392 l7 7 l12 -14" fill="none" stroke="#3DB862" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M248 392 h38" stroke="#CFC5B8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M222 416 l7 7 l12 -14" fill="none" stroke="#3DB862" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M248 416 h30" stroke="#CFC5B8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M222 440 l7 7 l12 -14" fill="none" stroke="#3DB862" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M248 440 h24" stroke="#CFC5B8" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <!-- stethoscope chest piece peeking out -->
+  <circle cx="318" cy="388" r="12" fill="#CCD6E0" stroke="#3E4C5E" stroke-width="5"/>
+  <circle cx="318" cy="388" r="4" fill="#FFFFFF"/>
+  <!-- stubby arms + paws holding the clipboard -->
+  <path d="M170 352 C 174 386, 186 404, 204 410" fill="none" stroke="#5B3A26" stroke-width="27" stroke-linecap="round"/>
+  <path d="M170 352 C 174 386, 186 404, 204 410" fill="none" stroke="#5FC9B9" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="208" cy="410" r="16" fill="#C99263" stroke="#5B3A26" stroke-width="7"/>
+  <path d="M342 352 C 338 386, 326 404, 308 410" fill="none" stroke="#5B3A26" stroke-width="27" stroke-linecap="round"/>
+  <path d="M342 352 C 338 386, 326 404, 308 410" fill="none" stroke="#5FC9B9" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="304" cy="410" r="16" fill="#C99263" stroke="#5B3A26" stroke-width="7"/>
+  <!-- small rounded side ears -->
+  <ellipse cx="152" cy="112" rx="19" ry="14" transform="rotate(-32 152 112)" fill="#C99263" stroke="#5B3A26" stroke-width="7"/>
+  <ellipse cx="154" cy="114" rx="8" ry="5.5" transform="rotate(-32 154 114)" fill="#8E5C3A"/>
+  <ellipse cx="360" cy="112" rx="19" ry="14" transform="rotate(32 360 112)" fill="#C99263" stroke="#5B3A26" stroke-width="7"/>
+  <ellipse cx="358" cy="114" rx="8" ry="5.5" transform="rotate(32 358 114)" fill="#8E5C3A"/>
+  <!-- tall, soft, boxy capybara head -->
+  <path d="M256 88 C 330 88, 370 98, 374 158 C 378 220, 394 292, 302 316 C 282 320, 230 320, 210 316 C 118 292, 134 220, 138 158 C 142 98, 182 88, 256 88 Z"
+        fill="url(#g-head)" stroke="#5B3A26" stroke-width="7" stroke-linejoin="round"/>
+  <!-- tuft -->
+  <path d="M240 90 q 8 -13 16 0 q 8 -13 16 0" fill="none" stroke="#5B3A26" stroke-width="5" stroke-linecap="round"/>
+  <!-- nose bridge highlight -->
+  <ellipse cx="256" cy="170" rx="30" ry="52" fill="#E2B486" opacity="0.45"/>
+  <!-- broad, flat-topped capybara muzzle -->
+  <path d="M256 200 C 320 200, 358 208, 360 246 C 362 288, 322 310, 256 310 C 190 310, 150 288, 152 246 C 154 208, 192 200, 256 200 Z"
+        fill="url(#g-muzzle)" stroke="#5B3A26" stroke-width="5" stroke-linejoin="round"/>
+  <!-- big dark nose -->
+  <path d="M220 222 Q 256 206 292 222 Q 302 236 286 246 Q 256 256 226 246 Q 210 236 220 222 Z" fill="#5B3A26"/>
+  <ellipse cx="242" cy="222" rx="10" ry="4.5" fill="#fff" opacity="0.55"/>
+  <!-- blush -->
+  <ellipse cx="164" cy="226" rx="20" ry="11" fill="#FF8FA0" opacity="0.62"/>
+  <ellipse cx="348" cy="226" rx="20" ry="11" fill="#FF8FA0" opacity="0.62"/>
+  <g>
+    <ellipse cx="178" cy="170" rx="13" ry="15" fill="#5B3A26"/>
+    <ellipse cx="334" cy="170" rx="13" ry="15" fill="#5B3A26"/>
+    <circle cx="182" cy="164" r="4.5" fill="#fff"/>
+    <circle cx="338" cy="164" r="4.5" fill="#fff"/>
+  </g>
+  <!-- worried brows -->
+  <path d="M156 142 L 196 132" fill="none" stroke="#5B3A26" stroke-width="5" stroke-linecap="round"/>
+  <path d="M356 142 L 316 132" fill="none" stroke="#5B3A26" stroke-width="5" stroke-linecap="round"/>
+  <!-- wobbly flat mouth -->
+  <path d="M238 270 q 6 -6 12 0 q 6 6 12 0 q 6 -6 12 0" fill="none" stroke="#5B3A26" stroke-width="5" stroke-linecap="round"/>
+  <!-- sweat drop -->
+  <path d="M392 138 C 380 158, 382 176, 396 178 C 410 176, 412 158, 400 138 C 398 134, 394 134, 392 138 Z"
+        fill="#9FD8FF" stroke="#5B3A26" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="392" cy="166" rx="3" ry="5" fill="#fff" opacity="0.9"/>
+  <!-- yuzu on head -->
+  <g>
+    <circle cx="256" cy="60" r="30" fill="url(#g-yuzu)" stroke="#5B3A26" stroke-width="7"/>
+    <circle cx="246" cy="50" r="2.4" fill="#F29A2A" opacity="0.7"/>
+    <circle cx="266" cy="66" r="2.4" fill="#F29A2A" opacity="0.7"/>
+    <circle cx="254" cy="72" r="2.0" fill="#F29A2A" opacity="0.7"/>
+    <ellipse cx="244" cy="48" rx="8" ry="5" fill="#FFF3D6" opacity="0.85" transform="rotate(-30 244 48)"/>
+    <path d="M256 31 q -2 -10 4 -14" fill="none" stroke="#5B3A26" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M260 22 C 272 6, 296 10, 300 20 C 286 30, 268 30, 260 22 Z" fill="#69C46B" stroke="#5B3A26" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M266 22 C 276 18, 286 18, 294 20" fill="none" stroke="#4FA352" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>

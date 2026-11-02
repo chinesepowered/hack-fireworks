@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapyMatch Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFF6EA; --card: #FFFFFF; --ink: #4A3326; --ink-soft: #7A6152; --line: #F0E2CF;
+    --teal: #2FA595; --teal-soft: #DDF4EF;
+    --elig: #23935A; --elig-bg: #DCF5E6; --excl: #C8602A; --excl-bg: #FFE7D6; --nr: #5F6B7A; --nr-bg: #ECEFF3;
+    --ok: #23935A; --bad: #D64545;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: Nunito, "Segoe UI", Roboto, Arial, sans-serif; }
+  body { min-height: 100vh; }
+  .wrap { max-width: 1920px; margin: 0 auto; padding: 28px 44px 36px; }
+  header { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+  header img { width: 86px; height: 86px; }
+  .brand { font-family: Fredoka, Nunito, sans-serif; font-weight: 700; font-size: 54px; letter-spacing: -1px; line-height: 1; }
+  .brand .m { color: var(--teal); }
+  .sub { font-size: 20px; font-weight: 700; color: var(--ink-soft); margin-top: 4px; }
+  .legend { margin-left: auto; display: flex; gap: 10px; align-items: center; font-weight: 700; color: var(--ink-soft); font-size: 18px; flex-wrap: wrap; justify-content: flex-end; }
+  select { font: inherit; font-weight: 700; padding: 8px 12px; border-radius: 12px; border: 2px solid var(--line); background: #fff; color: var(--ink); }
+  .grid { display: grid; grid-template-columns: 600px 1fr; gap: 30px; align-items: start; }
+  .card { background: var(--card); border-radius: 24px; box-shadow: 0 6px 0 var(--line), 0 18px 40px rgba(122, 82, 48, .08); }
+  .patient { padding: 28px 30px; }
+  .kicker { font-size: 17px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); }
+  .patient h2 { font-family: Fredoka, Nunito, sans-serif; font-size: 34px; margin: 6px 0 14px; }
+  .patient p { font-size: 23px; line-height: 1.5; margin: 0; }
+  .buddy { display: flex; align-items: flex-end; gap: 16px; margin-top: 22px; }
+  .buddy img { width: 190px; height: 190px; flex: none; }
+  .bubble { position: relative; background: #fff; border-radius: 22px; padding: 18px 22px; font-size: 23px; font-weight: 800; margin-bottom: 70px;
+            box-shadow: 0 6px 0 var(--line), 0 18px 40px rgba(122, 82, 48, .08); }
+  .bubble:before { content: ""; position: absolute; left: -16px; bottom: 22px; border: 12px solid transparent; border-right: 16px solid #fff; border-left: 0; }
+  .trials { display: flex; flex-direction: column; gap: 14px; }
+  .trial { display: grid; grid-template-columns: 1fr 96px; gap: 10px; padding: 16px 20px 16px 24px; }
+  .trial .top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .nct { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 15px; font-weight: 700; color: var(--ink-soft); background: #FBF3E8; border-radius: 8px; padding: 3px 8px; flex: none; }
+  .title { font-size: 21px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 10px; align-items: center; }
+  .why { margin-top: 8px; font-size: 16.5px; color: var(--ink-soft); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 6px 13px; font-size: 16.5px; font-weight: 800; border: 2px solid transparent; white-space: nowrap; }
+  .chip .who { font-weight: 700; opacity: .85; }
+  .chip.eligible { background: var(--elig-bg); color: var(--elig); }
+  .chip.excluded { background: var(--excl-bg); color: var(--excl); }
+  .chip.not_relevant { background: var(--nr-bg); color: var(--nr); }
+  .chip.gold { border-color: currentColor; background: #fff; }
+  .chip.ours { box-shadow: 0 0 0 3px rgba(47, 165, 149, .35); }
+  .mark { font-weight: 900; font-size: 17px; }
+  .mark.ok { color: var(--ok); } .mark.bad { color: var(--bad); }
+  .avatar { align-self: center; justify-self: end; width: 92px; height: 92px; }
+  footer { margin-top: 18px; font-size: 15px; color: var(--ink-soft); font-weight: 600; }
+  .msg { padding: 30px; font-size: 22px; }
+
+  /* entrance animations (seekable in video mode) */
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { 0% { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-8px) rotate(1.5deg); } }
+  .anim-rise { animation: rise .55s cubic-bezier(.2, .8, .2, 1) both; }
+  .anim-pop { animation: pop .45s cubic-bezier(.2, .8, .2, 1) both; }
+  .bob { animation: bob 2.4s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img id="logo" src="../assets/capy.svg" alt="CapyMatch capybara mascot">
+    <div>
+      <div class="brand">Capy<span class="m">Match</span></div>
+      <div class="sub">Clinical-trial pre-screening: is this patient eligible, excluded, or not relevant?</div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </header>
+  <div id="app" class="card msg">Loading examples…</div>
+  <footer id="foot"></footer>
+</div>
+<script>
+(() => {
+  const VIDEO = new URLSearchParams(location.search).has('video') || window.CAPY_VIDEO === true;
+  const STEP = VIDEO ? 0.85 : 0.12;      // seconds between trial cards
+  const LABEL_TEXT = { eligible: 'Eligible', excluded: 'Excluded', not_relevant: 'Not relevant' };
+  const OURS = name => /capymatch/i.test(name);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const shortName = n => n.replace(/\s*\(.*\)\s*$/, '');
+
+  function chip(label, who, extra = '') {
+    return `<span class="chip ${label} ${extra}">${who ? `<span class="who">${esc(who)}:</span>` : ''}${LABEL_TEXT[label] || esc(label || 'n/a')}</span>`;
+  }
+
+  function render(data) {
+    const cases = data.cases || [{ patient: data.patient, trials: data.trials, systems: data.systems }];
+    const app = document.getElementById('app');
+    const legend = document.getElementById('legend');
+    legend.innerHTML = cases.length > 1
+      ? `<label>Patient <select id="pick">${cases.map((c, i) => `<option value="${i}">${esc(c.patient.id)}</option>`).join('')}</select></label>`
+      : `${chip('eligible')}${chip('excluded')}${chip('not_relevant')}`;
+    document.getElementById('foot').textContent =
+      (data.placeholder ? 'PLACEHOLDER predictions. ' : '') +
+      'Patients are synthetic TREC Clinical Trials 2022 cases; trials come from ClinicalTrials.gov. Expert label = TREC assessor judgment. Decision support, not medical advice.';
+
+    function show(ci) {
+      const c = cases[ci];
+      const systems = c.systems || data.systems || Object.keys(c.trials[0]?.preds || {});
+      const ours = systems.find(OURS);
+      const matches = c.trials.filter(t => t.preds?.[ours] === 'eligible').length;
+      const tEnd = c.trials.length * STEP + 0.6;
+      app.className = 'grid';
+      app.innerHTML = `
+        <section>
+          <div class="card patient anim-rise" style="animation-delay:0s">
+            <div class="kicker">Patient ${esc(c.patient.id)}</div>
+            <h2>Patient note</h2>
+            <p>${esc(c.patient.text)}</p>
+          </div>
+          <div class="buddy">
+            <img class="anim-pop" style="animation-delay:${tEnd.toFixed(2)}s" src="../assets/${matches ? 'capy-happy' : 'capy-oops'}.svg" alt="">
+            <div class="bubble anim-pop" style="animation-delay:${(tEnd + 0.25).toFixed(2)}s">
+              ${matches ? `${matches} trial${matches > 1 ? 's' : ''} look${matches > 1 ? '' : 's'} like a match!` : 'No eligible trials in this list.'}
+            </div>
+          </div>
+        </section>
+        <section class="trials">
+          ${c.trials.map((t, i) => {
+            const d = (0.35 + i * STEP).toFixed(2);
+            const verdicts = systems.map((s, j) => {
+              const p = t.preds?.[s];
+              const ok = p === t.gold;
+              return `<span class="anim-pop" style="animation-delay:${(+d + 0.25 + j * 0.12).toFixed(2)}s">${chip(p, shortName(s), OURS(s) ? 'ours' : '')} <span class="mark ${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span></span>`;
+            }).join('');
+            const oursPred = t.preds?.[ours];
+            return `
+            <article class="card trial anim-rise" style="animation-delay:${d}s">
+              <div style="min-width:0">
+                <div class="top"><span class="nct">${esc(t.nct_id)}</span><span class="title" title="${esc(t.title)}">${esc(t.title)}</span></div>
+                <div class="row">${chip(t.gold, 'Expert label', 'gold')}${verdicts}</div>
+                ${t.why ? `<div class="why">${esc(t.why)}</div>` : ''}
+              </div>
+              <img class="avatar anim-pop" style="animation-delay:${(+d + 0.7).toFixed(2)}s" src="../assets/${oursPred === 'eligible' ? 'capy-happy' : 'capy-oops'}.svg" alt="">
+            </article>`;
+          }).join('')}
+        </section>`;
+      document.getElementById('logo').classList.add('bob');
+      window.CAPY_READY = true;
+    }
+    show(0);
+    const pick = document.getElementById('pick');
+    if (pick) pick.addEventListener('change', e => show(+e.target.value));
+  }
+
+  if (window.CAPY_EXAMPLES) { render(window.CAPY_EXAMPLES); return; }
+  fetch('examples.json').then(r => r.json()).then(render).catch(() => {
+    document.getElementById('app').innerHTML =
+      'Could not load <code>examples.json</code>. Serve the repo over HTTP, e.g. <code>python3 -m http.server 8000</code>, then open <code>http://localhost:8000/demo/</code>.';
+  });
+})();
+</script>
+</body>
+</html>

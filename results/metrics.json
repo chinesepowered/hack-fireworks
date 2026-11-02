@@ -1,0 +1,235 @@
+{
+  "split": "test",
+  "n_pairs": 900,
+  "n_patients": 50,
+  "systems": {
+    "gpt-6-luna": {
+      "name": "GPT-6 Luna",
+      "kind": "closed, low-cost tier (OpenAI)",
+      "n": 900,
+      "accuracy": 0.7077777777777777,
+      "accuracy_ci": [
+        0.6648105348944271,
+        0.7452805797435231
+      ],
+      "macro_f1": 0.7029938887305658,
+      "macro_f1_ci": [
+        0.6584648718986452,
+        0.7410216252769868
+      ],
+      "per_class": {
+        "eligible": {
+          "precision": 0.8214285714285714,
+          "recall": 0.69,
+          "f1": 0.75,
+          "support": 300
+        },
+        "excluded": {
+          "precision": 0.7297297297297297,
+          "recall": 0.54,
+          "f1": 0.6206896551724138,
+          "support": 300
+        },
+        "not_relevant": {
+          "precision": 0.6291079812206573,
+          "recall": 0.8933333333333333,
+          "f1": 0.7382920110192837,
+          "support": 300
+        }
+      },
+      "confusion": [
+        [
+          207,
+          41,
+          52,
+          0
+        ],
+        [
+          32,
+          162,
+          106,
+          0
+        ],
+        [
+          13,
+          19,
+          268,
+          0
+        ]
+      ],
+      "eligible_precision": 0.8214285714285714,
+      "eligible_recall": 0.69,
+      "unparsed": 0,
+      "cost_usd_total": 0.11754519999999997,
+      "cost_per_1k_usd": 0.13060577777777777,
+      "latency_p50_s": 1.589,
+      "latency_p95_s": 4.204549999999999,
+      "mean_prompt_tokens": 767.8744444444444,
+      "mean_output_tokens": 107.63666666666667
+    },
+    "nemotron-3-ultra": {
+      "name": "Nemotron 3 Ultra, zero-shot",
+      "kind": "open, Fireworks serverless",
+      "n": 900,
+      "accuracy": 0.6844444444444444,
+      "accuracy_ci": [
+        0.6446626450724543,
+        0.7223451327433629
+      ],
+      "macro_f1": 0.6771482152064819,
+      "macro_f1_ci": [
+        0.6357877531826508,
+        0.7150383515593791
+      ],
+      "per_class": {
+        "eligible": {
+          "precision": 0.8132780082987552,
+          "recall": 0.6533333333333333,
+          "f1": 0.7245841035120147,
+          "support": 300
+        },
+        "excluded": {
+          "precision": 0.6866359447004609,
+          "recall": 0.49666666666666665,
+          "f1": 0.5764023210831721,
+          "support": 300
+        },
+        "not_relevant": {
+          "precision": 0.6131221719457014,
+          "recall": 0.9033333333333333,
+          "f1": 0.7304582210242588,
+          "support": 300
+        }
+      },
+      "confusion": [
+        [
+          196,
+          49,
+          55,
+          0
+        ],
+        [
+          35,
+          149,
+          116,
+          0
+        ],
+        [
+          10,
+          19,
+          271,
+          0
+        ]
+      ],
+      "eligible_precision": 0.8132780082987552,
+      "eligible_recall": 0.6533333333333333,
+      "unparsed": 0,
+      "cost_usd_total": 1.6042739999999989,
+      "cost_per_1k_usd": 1.7825266666666655,
+      "latency_p50_s": 4.0105,
+      "latency_p95_s": 24.03974999999999,
+      "mean_prompt_tokens": 798.8911111111111,
+      "mean_output_tokens": 542.9966666666667
+    },
+    "super-vl-base": {
+      "name": "Nemotron 3.5 Super VL, zero-shot",
+      "kind": "open, Fireworks serverless sampling",
+      "n": 900,
+      "accuracy": 0.6933333333333334,
+      "accuracy_ci": [
+        0.6570764216834001,
+        0.7273793129048423
+      ],
+      "macro_f1": 0.6953071042788169,
+      "macro_f1_ci": [
+        0.6580595888011702,
+        0.7285125209497978
+      ],
+      "per_class": {
+        "eligible": {
+          "precision": 0.8254716981132075,
+          "recall": 0.5833333333333334,
+          "f1": 0.68359375,
+          "support": 300
+        },
+        "excluded": {
+          "precision": 0.5677083333333334,
+          "recall": 0.7266666666666667,
+          "f1": 0.6374269005847953,
+          "support": 300
+        },
+        "not_relevant": {
+          "precision": 0.7598684210526315,
+          "recall": 0.77,
+          "f1": 0.7649006622516556,
+          "support": 300
+        }
+      },
+      "confusion": [
+        [
+          175,
+          105,
+          20,
+          0
+        ],
+        [
+          29,
+          218,
+          53,
+          0
+        ],
+        [
+          8,
+          61,
+          231,
+          0
+        ]
+      ],
+      "eligible_precision": 0.8254716981132075,
+      "eligible_recall": 0.5833333333333334,
+      "unparsed": 0,
+      "cost_usd_total": 0.4206368999999996,
+      "cost_per_1k_usd": 0.4673743333333329,
+      "latency_p50_s": 0.95,
+      "latency_p95_s": 1.6932499999999988,
+      "mean_prompt_tokens": 798.8911111111111,
+      "mean_output_tokens": 8.337777777777777
+    }
+  },
+  "ours": "super-vl-base",
+  "comparisons": {
+    "gpt-6-luna": {
+      "acc_delta": -0.014444444444444371,
+      "acc_delta_ci": [
+        -0.04111225435669261,
+        0.013318904920458683
+      ],
+      "macro_f1_delta": -0.007686784451748863,
+      "macro_f1_delta_ci": [
+        -0.0359556424478012,
+        0.02143460956440163
+      ],
+      "ours_right_base_wrong": 88,
+      "ours_wrong_base_right": 101,
+      "mcnemar_p": 0.3827845942503986,
+      "cost_ratio": 0.2794457642684227
+    },
+    "nemotron-3-ultra": {
+      "acc_delta": 0.008888888888888946,
+      "acc_delta_ci": [
+        -0.018805309734513224,
+        0.03543743078626793
+      ],
+      "macro_f1_delta": 0.018158889072334983,
+      "macro_f1_delta_ci": [
+        -0.010240978200594214,
+        0.046365941340484336
+      ],
+      "ours_right_base_wrong": 95,
+      "ours_wrong_base_right": 87,
+      "mcnemar_p": 0.6039706597292289,
+      "cost_ratio": 3.8139164680987343
+    }
+  },
+  "cascade": null
+}

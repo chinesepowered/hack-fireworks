@@ -1,0 +1,14 @@
+{
+  "placeholder": true,
+  "test_pairs": 900,
+  "test_patients": 50,
+  "train_pairs": 3000,
+  "systems": [
+    {"key": "gpt-6-luna", "name": "GPT-6 Luna", "kind": "closed · OpenAI", "accuracy": 0.55, "accuracy_ci": [0.52, 0.58], "macro_f1": 0.54, "macro_f1_ci": [0.51, 0.57], "eligible_precision": 0.5, "eligible_recall": 0.6, "cost_per_1k_usd": 0.12, "latency_p50_s": 2.9, "unparsed": 0},
+    {"key": "nemotron-3-ultra", "name": "Nemotron 3 Ultra", "kind": "open · Fireworks serverless", "accuracy": 0.57, "accuracy_ci": [0.54, 0.60], "macro_f1": 0.56, "macro_f1_ci": [0.53, 0.59], "eligible_precision": 0.52, "eligible_recall": 0.62, "cost_per_1k_usd": 1.50, "latency_p50_s": 7.1, "unparsed": 0},
+    {"key": "super-vl-base", "name": "Nemotron 3.5 Super VL", "kind": "open · zero-shot", "accuracy": 0.50, "accuracy_ci": [0.47, 0.53], "macro_f1": 0.49, "macro_f1_ci": [0.46, 0.52], "eligible_precision": 0.48, "eligible_recall": 0.55, "cost_per_1k_usd": 0.60, "latency_p50_s": 1.2, "unparsed": 0},
+    {"key": "capymatch", "name": "CapyMatch (ours)", "kind": "Super VL + LoRA · Fireworks", "accuracy": 0.67, "accuracy_ci": [0.64, 0.70], "macro_f1": 0.66, "macro_f1_ci": [0.63, 0.69], "eligible_precision": 0.65, "eligible_recall": 0.68, "cost_per_1k_usd": 0.55, "latency_p50_s": 1.1, "unparsed": 0}
+  ],
+  "headline": {"ours": "capymatch", "vs": "gpt-6-luna", "acc_delta": 0.12, "acc_delta_ci": [0.08, 0.16], "mcnemar_p": 0.0001, "cost_ratio": 4.6},
+  "notes": ["PLACEHOLDER numbers for pipeline testing only."]
+}
