@@ -21,7 +21,7 @@
         "Nemotron 3 Ultra, zero-shot": "eligible",
         "CapyMatch (Super VL + LoRA, ours)": "eligible"
       },
-      "why": "The patient meets inclusion criteria (male, \u226518 years, able to consent) and does not meet exclusion criteria (vision is 5/10, not <5/10; no AMD, maculopathy, or other excluded conditions)."
+      "why": "The patient meets inclusion criteria (male, ≥18 years, able to consent) and does not meet exclusion criteria (vision is 5/10, not <5/10; no AMD, maculopathy, or other excluded conditions)."
     },
     {
       "nct_id": "NCT00069199",
@@ -33,7 +33,7 @@
         "Nemotron 3 Ultra, zero-shot": "excluded",
         "CapyMatch (Super VL + LoRA, ours)": "eligible"
       },
-      "why": "Patient meets all inclusion criteria: age \u226518, pupils can dilate to 6\u202fmm, and ocular media allow quality imaging."
+      "why": "Patient meets all inclusion criteria: age ≥18, pupils can dilate to 6 mm, and ocular media allow quality imaging."
     },
     {
       "nct_id": "NCT00894192",
@@ -84,5 +84,6 @@
       "why": "Patient does not have idiopathic macular hole, the trial's required condition."
     }
   ],
-  "note": "Illustrative patient from the held-out TREC 2022 test set; aggregate metrics are in results/."
+  "note": "Illustrative patient from the held-out TREC 2022 test set; aggregate metrics are in results/.",
+  "why_by": "Nemotron 3 Ultra"
 }

@@ -1,0 +1,48 @@
+1
+00:00:00,350 --> 00:00:06,071
+Meet CapyMatch: a calm little capybara that helps match patients to clinical trials.
+
+2
+00:00:07,021 --> 00:00:10,324
+Most clinical trials miss their enrollment targets.
+
+3
+00:00:10,324 --> 00:00:16,347
+Coordinators still screen patient charts by hand, against long lists of eligibility criteria.
+
+4
+00:00:17,297 --> 00:00:33,414
+On the TREC Clinical Trials benchmark, we fine-tuned NVIDIA's Nemotron 3.5 Super VL with LoRA on Fireworks serverless training, using 3,000 expert-labeled patient-trial pairs, then tested on 900 pairs from 50 new patients.
+
+5
+00:00:34,364 --> 00:00:36,468
+Here's a held-out test patient.
+
+6
+00:00:36,468 --> 00:00:44,003
+For each trial, CapyMatch says eligible, excluded, or not relevant, and we check it against the expert's label.
+
+7
+00:00:44,953 --> 00:00:51,076
+Fine-tuning lifted Nemotron Super VL from 69 to 73 percent, a significant gain.
+
+8
+00:00:51,076 --> 00:00:58,439
+That's statistically tied with GPT-6.1 Sol, the frontier model, at about a quarter of the cost.
+
+9
+00:00:58,439 --> 00:01:05,026
+And CapyMatch finds the most eligible patients: 78 percent recall, versus 72 for Sol.
+
+10
+00:01:05,026 --> 00:01:10,684
+OpenAI's cheaper Luna model scores a bit lower, though not significantly.
+
+11
+00:01:11,634 --> 00:01:20,237
+Caveats: expert labels are noisy, patient notes are synthetic, and this is decision support, not a diagnosis.
+
+12
+00:01:20,237 --> 00:01:26,315
+CapyMatch: fine-tuned open models on Fireworks, helping patients find trials.
+

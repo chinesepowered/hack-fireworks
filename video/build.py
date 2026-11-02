@@ -94,50 +94,80 @@ def p_text(p: float | None) -> str:
 
 
 # ----------------------------------------------------------------------------- narration
+def cost_fraction(ours_cost: float, other_cost: float) -> str:
+    """Plain-English cost comparison, e.g. 'about a quarter of the cost'."""
+    if ours_cost <= 0 or other_cost <= 0:
+        return ""
+    r = other_cost / ours_cost
+    for lo, hi, words in [(1.75, 2.5, "about half the cost"), (2.5, 3.5, "about a third of the cost"),
+                          (3.5, 4.5, "about a quarter of the cost"), (4.5, 5.5, "about a fifth of the cost")]:
+        if lo <= r < hi:
+            return words
+    if r >= 5.5:
+        return f"about 1/{r:.0f} of the cost"
+    return ""
+
+
 def results_story(s: dict) -> dict:
-    """Numbers-driven results text. Only states what summary.json supports."""
+    """Numbers-driven results text. Only claims what summary.json supports (CIs decide win/tie/loss)."""
     sysmap = {x["key"]: x for x in s["systems"]}
+    comps = s.get("comparisons", {})
     h = s["headline"]
     ours, vs = sysmap[h["ours"]], sysmap[h["vs"]]
+    vs_short = vs["name"].replace("GPT-6.1 ", "").replace("GPT-6 ", "") if vs["name"].startswith("GPT") else vs["name"]
     lo, hi = h["acc_delta_ci"]
-    d = round(100 * h["acc_delta"])
+    d = 100 * h["acc_delta"]
     spoken, callout = [], []
-    base = sysmap.get("super-vl-base")
+
+    # 1) fine-tuning gain over the same model zero-shot
+    base, cb = sysmap.get("super-vl-base"), comps.get("super-vl-base")
     if base and base is not ours:
         b, o = pct(base["accuracy"]), pct(ours["accuracy"])
+        sig = bool(cb) and cb["acc_delta_ci"][0] > 0
         if int(o) > int(b):
-            spoken.append(f"Fine-tuning lifted Nemotron Super VL from {b} to {o} percent accuracy.")
+            spoken.append(f"Fine-tuning lifted Nemotron Super VL from {b} to {o} percent{', a significant gain' if sig else ''}.")
         elif int(o) < int(b):
-            spoken.append(f"Fine-tuning lowered Nemotron Super VL from {b} to {o} percent accuracy.")
+            spoken.append(f"Fine-tuning lowered Nemotron Super VL from {b} to {o} percent.")
         else:
-            spoken.append(f"Fine-tuning kept Nemotron Super VL at about {o} percent accuracy.")
-    else:
-        spoken.append(f"CapyMatch reached {pct(ours['accuracy'])} percent accuracy.")
+            spoken.append(f"Fine-tuning kept Nemotron Super VL at about {o} percent.")
+        if cb and sig:
+            callout.append(f"+{100 * cb['acc_delta']:.1f} pts over its zero-shot base (p = {cb['mcnemar_p']:.3f})")
+
+    # 2) headline comparison (frontier model)
+    frac = cost_fraction(ours["cost_per_1k_usd"], vs["cost_per_1k_usd"])
+    frontier = ", the frontier model," if "frontier" in vs.get("kind", "").lower() else ""
     if lo > 0:
         win = "win"
-        spoken.append(f"That's about {d} points more accurate than {vs['name']}, and the 95 percent confidence interval stays above zero.")
-        callout.append(f"+{d} pts accuracy vs {vs['name']}")
+        spoken.append(f"That beats {vs['name']}{frontier} by about {d:.0f} points" + (f", at {frac}." if frac else "."))
+        head = f"Beats {vs['name']}" + (f" at {frac.replace('about ', '~')}" if frac else "")
     elif hi < 0:
         win = "loss"
-        spoken.append(f"That's about {abs(d)} points below {vs['name']}, so on accuracy this run is not a win.")
-        callout.append(f"{d} pts accuracy vs {vs['name']}")
+        spoken.append(f"That's about {abs(d):.0f} points below {vs['name']}" + (f", at {frac}." if frac else "."))
+        head = f"{d:.0f} pts vs {vs['name']}"
     else:
         win = "tie"
-        spoken.append(f"That's statistically tied with {vs['name']}: the 95 percent confidence interval includes zero.")
-        callout.append(f"Tied with {vs['name']} on accuracy")
-    callout.append(f"95% CI {100 * lo:+.0f} to {100 * hi:+.0f} pts" + (f" · McNemar {p_text(h.get('mcnemar_p'))}" if h.get("mcnemar_p") is not None else ""))
-    co, cv = ours["cost_per_1k_usd"], vs["cost_per_1k_usd"]
-    if co < cv * 0.95:
-        r = cv / co if co > 0 else float("inf")
-        spoken.append(f"And it costs about {money_spoken(co)} per thousand screenings, roughly {r:.0f} times less than {vs['name']}." if r >= 2
-                      else f"And it costs about {money_spoken(co)} per thousand screenings, less than {vs['name']}.")
-    elif co > cv * 1.05:
-        spoken.append(f"It costs about {money_spoken(co)} per thousand screenings, versus {money_spoken(cv)} for {vs['name']}.")
-    else:
-        spoken.append(f"It costs about the same, around {money_spoken(co)} per thousand screenings.")
-    sol = sysmap.get("gpt-6.1-sol")
-    if sol and h["vs"] != "gpt-6.1-sol":
-        spoken.append(f"For reference, GPT-6.1 Sol scored {pct(sol['accuracy'])} percent at {money_spoken(sol['cost_per_1k_usd'])} per thousand.")
+        spoken.append(f"That's statistically tied with {vs['name']}{frontier} at {frac}." if frac
+                      else f"That's statistically tied with {vs['name']}.")
+        sym = {"half the cost": "½ the cost", "a third of the cost": "1/3 of the cost", "a quarter of the cost": "¼ of the cost",
+               "a fifth of the cost": "1/5 of the cost"}
+        head = f"Matches {vs['name']}" + (f"\nat ~{sym.get(frac.replace('about ', ''), frac.replace('about ', ''))}" if frac else "")
+    callout.insert(0, f"Accuracy {d:+.1f} pts vs {vs_short}\n(95% CI {100 * lo:+.1f} to {100 * hi:+.1f}, p = {h['mcnemar_p']:.2f})")
+    callout.insert(0, head)
+
+    # 3) eligible recall, if ours is the best at finding eligible patients
+    rec = {k: x.get("eligible_recall") for k, x in sysmap.items() if x.get("eligible_recall") is not None}
+    if rec and max(rec, key=rec.get) == h["ours"] and vs["key"] in rec:
+        spoken.append(f"And CapyMatch finds the most eligible patients: {pct(rec[h['ours']])} percent recall, versus {pct(rec[vs['key']])} for {vs_short}.")
+        callout.append(f"Best eligible recall: {pct(rec[h['ours']])}% (vs {pct(rec[vs['key']])}% for {vs_short})")
+
+    # 4) honest note on a cheaper closed model, if one exists
+    luna, cl = sysmap.get("gpt-6-luna"), comps.get("gpt-6-luna")
+    if luna and luna is not vs and luna["cost_per_1k_usd"] < ours["cost_per_1k_usd"]:
+        if luna["accuracy"] < ours["accuracy"]:
+            tail = ", though not significantly." if cl and cl["acc_delta_ci"][0] <= 0 else "."
+            spoken.append(f"OpenAI's cheaper Luna model scores a bit lower{tail}")
+        else:
+            spoken.append("OpenAI's low-cost Luna is cheaper, and about as accurate.")
     return {"spoken": " ".join(spoken), "callout": callout, "win": win}
 
 
@@ -325,57 +355,66 @@ def scene_results(s: dict) -> str:
     systems = s["systems"]
     ours_key = s["headline"]["ours"]
     n = len(systems)
-    row_h, x0, width = min(112, int(560 / max(n, 1))), 560, 640
+    row_h = min(112, int(500 / max(n, 1)))
+    bar_h = int(row_h * 0.56)
+    x0, width, xc = 500, 560, 1220            # name column ends at x0; bars x0..x0+width; cost column at xc
+    top = 70
     rows = []
     for i, x in enumerate(systems):
-        y = 40 + i * row_h
+        y = top + i * row_h
         ours = x["key"] == ours_key
         lo, hi = x.get("accuracy_ci", [x["accuracy"], x["accuracy"]])
-        bar_w = width * x["accuracy"]
         color = "#2FA595" if ours else "#D9C3A9"
-        d = 0.6 + i * 0.35
+        ink = "#2FA595" if ours else "#4A3326"
+        d = 0.6 + i * 0.3
+        name = x["name"]
+        fs = min(29, 470 / (0.55 * max(len(name), 1)))
+        cy = y + bar_h / 2 + 10
         rows.append(f"""
-  <text x="{x0 - 24}" y="{y + 50}" text-anchor="end" font-family="Nunito" font-weight="{900 if ours else 800}" font-size="{min(30, 520 / (0.55 * max(len(x['name']), 1))):.1f}" fill="{'#2FA595' if ours else '#4A3326'}">{html.escape(x['name'])}</text>
-  <text x="{x0 - 24}" y="{y + 82}" text-anchor="end" font-family="Nunito" font-weight="700" font-size="21" fill="#9A8273">{html.escape(x.get('kind', ''))}</text>
-  <rect x="{x0}" y="{y + 18}" width="{bar_w:.1f}" height="64" rx="14" fill="{color}" style="transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.8,.2,1) both;animation-delay:{d:.2f}s"/>
+  <text x="{x0 - 22}" y="{cy + 2:.0f}" text-anchor="end" font-family="Nunito" font-weight="{900 if ours else 800}" font-size="{fs:.1f}" fill="{ink}">{html.escape(name)}</text>
+  <text x="{x0 - 22}" y="{cy + 28:.0f}" text-anchor="end" font-family="Nunito" font-weight="700" font-size="19" fill="#9A8273">{html.escape(x.get('kind', ''))}</text>
+  <rect x="{x0}" y="{y + 10}" width="{width * x['accuracy']:.1f}" height="{bar_h}" rx="12" fill="{color}" style="transform-box:fill-box;transform-origin:left center;animation:grow .9s cubic-bezier(.2,.8,.2,1) both;animation-delay:{d:.2f}s"/>
   <g class="fade" style="animation-delay:{d + 0.8:.2f}s">
-    <line x1="{x0 + width * lo:.1f}" x2="{x0 + width * hi:.1f}" y1="{y + 50}" y2="{y + 50}" stroke="#4A3326" stroke-width="4"/>
-    <line x1="{x0 + width * lo:.1f}" x2="{x0 + width * lo:.1f}" y1="{y + 36}" y2="{y + 64}" stroke="#4A3326" stroke-width="4"/>
-    <line x1="{x0 + width * hi:.1f}" x2="{x0 + width * hi:.1f}" y1="{y + 36}" y2="{y + 64}" stroke="#4A3326" stroke-width="4"/>
-    <text x="{x0 + width * max(hi, x['accuracy']) + 18:.1f}" y="{y + 61}" font-family="Fredoka" font-weight="700" font-size="36" fill="{'#2FA595' if ours else '#4A3326'}">{pct(x['accuracy'])}%</text>
+    <line x1="{x0 + width * lo:.1f}" x2="{x0 + width * hi:.1f}" y1="{cy - 4:.0f}" y2="{cy - 4:.0f}" stroke="#4A3326" stroke-width="4"/>
+    <line x1="{x0 + width * lo:.1f}" x2="{x0 + width * lo:.1f}" y1="{cy - 16:.0f}" y2="{cy + 8:.0f}" stroke="#4A3326" stroke-width="4"/>
+    <line x1="{x0 + width * hi:.1f}" x2="{x0 + width * hi:.1f}" y1="{cy - 16:.0f}" y2="{cy + 8:.0f}" stroke="#4A3326" stroke-width="4"/>
+    <text x="{x0 + width * max(hi, x['accuracy']) + 16:.1f}" y="{cy + 8:.0f}" font-family="Fredoka" font-weight="700" font-size="34" fill="{ink}">{100 * x['accuracy']:.1f}%</text>
+    <text x="{xc}" y="{cy + 8:.0f}" text-anchor="end" font-family="Fredoka" font-weight="700" font-size="32" fill="{ink}">{money_text(x['cost_per_1k_usd'])}</text>
   </g>""")
-    chance = x0 + width / 3
-    chart_h = 40 + n * row_h + 30
-    ticks = "".join(f'<line x1="{x0 + width * t}" x2="{x0 + width * t}" y1="20" y2="{chart_h - 20}" stroke="#EADBC8" stroke-width="2"/>'
-                    f'<text x="{x0 + width * t}" y="{chart_h + 8}" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="20" fill="#9A8273">{int(t * 100)}%</text>'
+    chart_h = top + n * row_h + 10
+    ticks = "".join(f'<line x1="{x0 + width * t}" x2="{x0 + width * t}" y1="{top - 6}" y2="{chart_h}" stroke="#EADBC8" stroke-width="2"/>'
+                    f'<text x="{x0 + width * t}" y="{chart_h + 28}" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="20" fill="#9A8273">{int(t * 100)}%</text>'
                     for t in (0, .25, .5, .75, 1))
-    chart = f"""<svg width="1300" height="{chart_h + 20}" viewBox="0 0 1300 {chart_h + 20}" style="overflow:visible">
+    chance = x0 + width / 3
+    chart = f"""<svg width="1260" height="{chart_h + 40}" viewBox="0 0 1260 {chart_h + 40}" style="overflow:visible">
+  <text x="{x0}" y="30" font-family="Nunito" font-weight="800" font-size="22" fill="#9A8273">ACCURACY (95% CI)</text>
+  <text x="{xc}" y="30" text-anchor="end" font-family="Nunito" font-weight="800" font-size="22" fill="#9A8273">$ / 1K SCREENS</text>
   {ticks}
-  <line x1="{chance:.1f}" x2="{chance:.1f}" y1="20" y2="{chart_h - 20}" stroke="#D64545" stroke-width="3" stroke-dasharray="8 8" opacity=".55"/>
-  <text x="{chance + 8:.1f}" y="{chart_h - 26}" font-family="Nunito" font-weight="800" font-size="19" fill="#D64545" opacity=".75">chance</text>
+  <line x1="{chance:.1f}" x2="{chance:.1f}" y1="{top - 6}" y2="{chart_h}" stroke="#D64545" stroke-width="3" stroke-dasharray="8 8" opacity=".5"/>
+  <text x="{chance + 8:.1f}" y="{chart_h - 8}" font-family="Nunito" font-weight="800" font-size="18" fill="#D64545" opacity=".75">chance</text>
   {''.join(rows)}
 </svg>"""
-    costs = "".join(
-        f'<div class="slide" style="display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:2px solid #F3E8DA;animation-delay:{2.2 + i * 0.15:.2f}s;'
-        f'font-size:27px;font-weight:{900 if x["key"] == ours_key else 700};color:{"#2FA595" if x["key"] == ours_key else "#4A3326"}">'
-        f'<span>{html.escape(x["name"])}</span><span>{money_text(x["cost_per_1k_usd"])}</span></div>'
-        for i, x in enumerate(systems))
-    mascot = "capy-happy.svg" if rs["win"] == "win" else ("capy.svg" if rs["win"] == "tie" else "capy-oops.svg")
-    call = "".join(f'<div style="font-size:{34 if i == 0 else 25}px;font-weight:{900 if i == 0 else 700};margin-top:{0 if i == 0 else 8}px">{html.escape(c)}</div>'
-                   for i, c in enumerate(rs["callout"]))
+    mascot = "capy-happy.svg" if rs["win"] in ("win", "tie") else "capy-oops.svg"
+    call = "".join(
+        f'<div class="fade" style="animation-delay:{3.0 + i * 0.35:.2f}s;font-size:{36 if i == 0 else 23}px;font-weight:{900 if i == 0 else 700};'
+        f'line-height:1.25;margin-top:{0 if i == 0 else 12}px;{"font-family:Fredoka;" if i == 0 else ""}">{html.escape(c).replace(chr(10), "<br>")}</div>'
+        for i, c in enumerate(rs["callout"]))
     wm = '<div class="wm">PLACEHOLDER NUMBERS</div>' if s.get("placeholder") else ""
+    foot = ""
+    cas = s.get("cascade") or {}
+    pt = next((r for r in cas.get("sweep_on_test", []) if abs(r.get("coverage", 0) - 0.7) < 1e-6), None)
+    if pt:
+        foot = (f'<div class="fade" style="position:absolute;left:560px;top:{280 + chart_h + 64}px;width:720px;font-size:22px;font-weight:800;'
+                f'color:#7A6152;animation-delay:4.4s">Confidence filter: on its most-confident {pct(pt["coverage"])}% of pairs, '
+                f'CapyMatch is {100 * pt["auto_accuracy"]:.1f}% accurate.</div>')
     return deco() + f"""
-<div style="position:absolute;left:110px;top:70px"><div class="kicker rise">Results · held-out test set</div>
-<div class="h1 rise" style="animation-delay:.15s;font-size:68px">Accuracy on {s['test_pairs']} pairs from {s['test_patients']} new patients</div>
-<div class="fade" style="animation-delay:.3s;font-size:25px;font-weight:700;color:#9A8273;margin-top:8px">Bars: accuracy · whiskers: 95% bootstrap confidence interval · balanced 3-way labels (chance = 33%)</div></div>
-<div style="position:absolute;left:40px;top:280px">{chart}</div>
-<div class="card rise" style="position:absolute;left:1400px;top:280px;width:450px;padding:28px 32px;animation-delay:2s">
-  <div style="font-family:Fredoka;font-weight:700;font-size:34px;margin-bottom:8px">Cost per 1,000 screenings</div>{costs}
-  <div style="font-size:18px;font-weight:700;color:#9A8273;margin-top:12px">List price × measured tokens</div>
-</div>
-<div class="card pop" style="position:absolute;left:{x0 + 40}px;top:{min(280 + chart_h + 24, 940)}px;padding:22px 34px;background:#2FA595;color:#fff;animation-delay:3.3s;max-width:820px">{call}</div>
-<div class="pop" style="position:absolute;left:1520px;top:760px;animation-delay:3.6s"><img class="bob" src="{capy(mascot)}" style="width:290px;height:290px"></div>
-{wm}"""
+<div style="position:absolute;left:100px;top:64px"><div class="kicker rise">Results · held-out test set</div>
+<div class="h1 rise" style="animation-delay:.15s;font-size:64px">Accuracy on {s['test_pairs']} pairs from {s['test_patients']} new patients</div>
+<div class="fade" style="animation-delay:.3s;font-size:23px;font-weight:700;color:#9A8273;margin-top:6px">Whiskers: 95% bootstrap confidence interval · balanced 3-way labels (chance = 33%) · cost = list price × measured tokens</div></div>
+<div style="position:absolute;left:30px;top:280px">{chart}</div>
+<div class="card pop" style="position:absolute;left:1330px;top:290px;width:530px;padding:30px 34px;background:#2FA595;color:#fff;animation-delay:2.8s">{call}</div>
+<div class="pop" style="position:absolute;left:1500px;top:{min(290 + 120 + 60 * len(rs['callout']) + 90, 760)}px;animation-delay:3.8s"><img class="bob" src="{capy(mascot)}" style="width:280px;height:280px"></div>
+{foot}{wm}"""
 
 
 def scene_close(s: dict) -> str:

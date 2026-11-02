@@ -52,6 +52,17 @@
   .mark { font-weight: 900; font-size: 17px; }
   .mark.ok { color: var(--ok); } .mark.bad { color: var(--bad); }
   .avatar { align-self: center; justify-self: end; width: 92px; height: 92px; }
+  .matrix { display: flex; flex-direction: column; gap: 10px; overflow-x: auto; }
+  .mgrid { display: grid; grid-template-columns: minmax(300px, 1fr) 132px repeat(var(--nsys), 140px) 62px; column-gap: 10px; align-items: center; }
+  .mhead { padding: 0 18px 2px 22px; font-size: 15.5px; font-weight: 800; color: var(--ink-soft); line-height: 1.2; }
+  .mhead .ours { color: var(--teal); }
+  .mrow { padding: 12px 18px 12px 22px; }
+  .mrow .tcell { min-width: 0; }
+  .mrow .title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 19px; line-height: 1.22; margin-top: 4px; }
+  .mrow .why { grid-column: 1 / -1; margin-top: 6px; font-size: 15.5px; }
+  .cell { display: flex; align-items: center; gap: 5px; }
+  .cell .chip { padding: 5px 11px; font-size: 15.5px; }
+  .mrow .avatar { width: 60px; height: 60px; }
   footer { margin-top: 18px; font-size: 15px; color: var(--ink-soft); font-weight: 600; }
   .msg { padding: 30px; font-size: 22px; }
 
@@ -122,23 +133,26 @@
             </div>
           </div>
         </section>
-        <section class="trials">
+        <section class="matrix" style="--nsys:${systems.length}">
+          <div class="mgrid mhead anim-rise" style="animation-delay:.2s">
+            <div>Candidate trial</div><div>Expert label</div>
+            ${systems.map(sn => `<div class="${OURS(sn) ? 'ours' : ''}">${esc(sn)}</div>`).join('')}<div></div>
+          </div>
           ${c.trials.map((t, i) => {
             const d = (0.35 + i * STEP).toFixed(2);
-            const verdicts = systems.map((s, j) => {
-              const p = t.preds?.[s];
+            const cells = systems.map((sn, j) => {
+              const p = t.preds?.[sn];
               const ok = p === t.gold;
-              return `<span class="anim-pop" style="animation-delay:${(+d + 0.25 + j * 0.12).toFixed(2)}s">${chip(p, shortName(s), OURS(s) ? 'ours' : '')} <span class="mark ${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span></span>`;
+              return `<div class="cell anim-pop" style="animation-delay:${(+d + 0.25 + j * 0.12).toFixed(2)}s">${chip(p, '', OURS(sn) ? 'ours' : '')}<span class="mark ${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span></div>`;
             }).join('');
             const oursPred = t.preds?.[ours];
             return `
-            <article class="card trial anim-rise" style="animation-delay:${d}s">
-              <div style="min-width:0">
-                <div class="top"><span class="nct">${esc(t.nct_id)}</span><span class="title" title="${esc(t.title)}">${esc(t.title)}</span></div>
-                <div class="row">${chip(t.gold, 'Expert label', 'gold')}${verdicts}</div>
-                ${t.why ? `<div class="why">${esc(t.why)}</div>` : ''}
-              </div>
+            <article class="card mrow mgrid anim-rise" style="animation-delay:${d}s">
+              <div class="tcell"><span class="nct">${esc(t.nct_id)}</span><div class="title" title="${esc(t.title)}">${esc(t.title)}</div></div>
+              <div class="cell">${chip(t.gold, '', 'gold')}</div>
+              ${cells}
               <img class="avatar anim-pop" style="animation-delay:${(+d + 0.7).toFixed(2)}s" src="../assets/${oursPred === 'eligible' ? 'capy-happy' : 'capy-oops'}.svg" alt="">
+              ${t.why ? `<div class="why">${(t.why_by || data.why_by) ? `<b>Rationale (${esc(t.why_by || data.why_by)}):</b> ` : ''}${esc(t.why)}</div>` : ''}
             </article>`;
           }).join('')}
         </section>`;
