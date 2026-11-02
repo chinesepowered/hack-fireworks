@@ -1,5 +1,6 @@
 {
   "placeholder": false,
+  "why_by": "Nemotron 3 Ultra",
   "systems": [
     "GPT-6.1 Sol",
     "GPT-6 Luna",
@@ -12,6 +13,18 @@
   },
   "trials": [
     {
+      "nct_id": "NCT04741763",
+      "title": "\"Night Vision and Carotenoids\"",
+      "gold": "eligible",
+      "preds": {
+        "GPT-6.1 Sol": "excluded",
+        "GPT-6 Luna": "not_relevant",
+        "Nemotron 3 Ultra, zero-shot": "excluded",
+        "CapyMatch (Super VL + LoRA, ours)": "eligible"
+      },
+      "why": "The 67-year-old meets all inclusion criteria: age \u226550, no carotenoid supplements in the prior 10\u202fweeks, no cataract or retinal disease other than atrophic AMD, and visual acuity of at least 20/25."
+    },
+    {
       "nct_id": "NCT03811964",
       "title": "Photomotor Reflex to Evaluate the Role of the Non-visual Effects of Light in Neurological, Psychiatric and Ophthalmological Pathologies",
       "gold": "eligible",
@@ -21,19 +34,7 @@
         "Nemotron 3 Ultra, zero-shot": "eligible",
         "CapyMatch (Super VL + LoRA, ours)": "eligible"
       },
-      "why": "The patient meets inclusion criteria (male, ≥18 years, able to consent) and does not meet exclusion criteria (vision is 5/10, not <5/10; no AMD, maculopathy, or other excluded conditions)."
-    },
-    {
-      "nct_id": "NCT00069199",
-      "title": "Optical Coherence Tomography Comparative Study",
-      "gold": "eligible",
-      "preds": {
-        "GPT-6.1 Sol": "excluded",
-        "GPT-6 Luna": "not_relevant",
-        "Nemotron 3 Ultra, zero-shot": "excluded",
-        "CapyMatch (Super VL + LoRA, ours)": "eligible"
-      },
-      "why": "Patient meets all inclusion criteria: age ≥18, pupils can dilate to 6 mm, and ocular media allow quality imaging."
+      "why": "He is eligible because he is over 18, can consent, and has no excluded conditions like cataract with vision worse than 5/10."
     },
     {
       "nct_id": "NCT00894192",
@@ -45,7 +46,7 @@
         "Nemotron 3 Ultra, zero-shot": "excluded",
         "CapyMatch (Super VL + LoRA, ours)": "excluded"
       },
-      "why": "Patient is 67 years old, exceeding the trial's maximum age of 35 years."
+      "why": "The patient is 67 years old, exceeding the trial's maximum age of 35 years."
     },
     {
       "nct_id": "NCT02627339",
@@ -57,7 +58,7 @@
         "Nemotron 3 Ultra, zero-shot": "excluded",
         "CapyMatch (Super VL + LoRA, ours)": "excluded"
       },
-      "why": "Excluded because the patient has cataract indicated by loss of red reflex."
+      "why": "Excluded because loss of red reflex indicates cataract, violating exclusion against cataracts or opacities 2+ or greater."
     },
     {
       "nct_id": "NCT01742819",
@@ -69,7 +70,7 @@
         "Nemotron 3 Ultra, zero-shot": "not_relevant",
         "CapyMatch (Super VL + LoRA, ours)": "not_relevant"
       },
-      "why": "Patient lacks a clinical diagnosis of glaucoma and has normal visual fields, failing inclusion criteria."
+      "why": "The patient lacks a clinical diagnosis of primary open angle, pseudoexfoliative, or angle closure glaucoma required for trial inclusion."
     },
     {
       "nct_id": "NCT02895594",
@@ -81,9 +82,8 @@
         "Nemotron 3 Ultra, zero-shot": "not_relevant",
         "CapyMatch (Super VL + LoRA, ours)": "not_relevant"
       },
-      "why": "Patient does not have idiopathic macular hole, the trial's required condition."
+      "why": "Patient does not have idiopathic macular hole, the required condition for this surgical outcomes study."
     }
   ],
-  "note": "Illustrative patient from the held-out TREC 2022 test set; aggregate metrics are in results/.",
-  "why_by": "Nemotron 3 Ultra"
+  "note": "Illustrative patient from the held-out TREC 2022 test set; aggregate metrics are in results/."
 }
