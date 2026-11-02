@@ -42,8 +42,8 @@ ASSETS = ROOT / "assets"
 VOICE_ID = "cgSgspJ2msm6clMCkdW9"  # "Jessica" (ElevenLabs premade): young American female, bright and warm
 VOICE_NAME = "Jessica"
 MODEL_ID = "eleven_v4"
-VOICE_SETTINGS = {"stability": 0.5, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": True}
-LEAD, TAIL, LAST_TAIL, FPS = 0.35, 0.75, 1.9, 30
+VOICE_SETTINGS = {"stability": 0.5, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": True, "speed": 1.06}
+LEAD, TAIL, LAST_TAIL, FPS = 0.35, 0.6, 1.7, 30
 REPO_URL = "github.com/chinesepowered/hack-fireworks"
 
 
@@ -129,7 +129,7 @@ def results_story(s: dict) -> dict:
     co, cv = ours["cost_per_1k_usd"], vs["cost_per_1k_usd"]
     if co < cv * 0.95:
         r = cv / co if co > 0 else float("inf")
-        spoken.append(f"And it costs about {money_spoken(co)} per thousand screenings, roughly {r:.0f} times less." if r >= 2
+        spoken.append(f"And it costs about {money_spoken(co)} per thousand screenings, roughly {r:.0f} times less than {vs['name']}." if r >= 2
                       else f"And it costs about {money_spoken(co)} per thousand screenings, less than {vs['name']}.")
     elif co > cv * 1.05:
         spoken.append(f"It costs about {money_spoken(co)} per thousand screenings, versus {money_spoken(cv)} for {vs['name']}.")
@@ -145,16 +145,16 @@ def narration(s: dict) -> list[dict]:
     rs = results_story(s)
     lines = [
         ("title", "Meet CapyMatch: a calm little capybara that helps match patients to clinical trials."),
-        ("problem", "Most clinical trials miss their enrollment targets. One reason is manual screening: research coordinators "
-                    "read patient charts against long lists of inclusion and exclusion criteria."),
-        ("approach", f"We used the Trek Clinical Trials benchmark: {s['train_pairs']:,} expert-labeled patient and trial pairs from 2021. "
-                     f"We fine-tuned NVIDIA's Nemotron 3.5 Super VL with a LoRA adapter on Fireworks serverless training, "
-                     f"then tested on {s['test_pairs']} pairs from {s['test_patients']} new patients."),
-        ("demo", "Here's a patient from the held-out test set. For every candidate trial, CapyMatch answers: eligible, excluded, "
-                 "or not relevant, and we check each answer against the expert's label."),
+        ("problem", "Most clinical trials miss their enrollment targets. Coordinators still screen patient charts by hand, "
+                    "against long lists of eligibility criteria."),
+        ("approach", f"On the Trek Clinical Trials benchmark, we fine-tuned NVIDIA's Nemotron 3.5 Super VL with LoRA on Fireworks "
+                     f"serverless training, using {s['train_pairs']:,} expert-labeled patient-trial pairs, then tested on "
+                     f"{s['test_pairs']} pairs from {s['test_patients']} new patients."),
+        ("demo", "Here's a held-out test patient. For each trial, CapyMatch says eligible, excluded, or not relevant, "
+                 "and we check it against the expert's label."),
         ("results", rs["spoken"]),
-        ("close", "A few caveats: the expert labels are noisy, the patient notes are synthetic, and this is decision support, "
-                  "not a diagnosis. Open models, fine-tuned on Fireworks, helping patients find trials. CapyMatch!"),
+        ("close", "Caveats: expert labels are noisy, patient notes are synthetic, and this is decision support, not a diagnosis. "
+                  "CapyMatch: fine-tuned open models on Fireworks, helping patients find trials."),
     ]
     caption = lambda t: t.replace("Trek Clinical", "TREC Clinical")
     return [{"id": k, "spoken": t, "caption": caption(t)} for k, t in lines]

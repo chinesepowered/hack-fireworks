@@ -26,10 +26,8 @@ baselines:  ## closed + open zero-shot baselines on the frozen test set
 finetune:  ## LoRA SFT of Nemotron 3.5 Super VL on Fireworks serverless training
 	$(PY) -m capymatch.finetune --epochs 2 --batch-size 32 --lr 1e-4 --rank 16 --tag capy
 
-eval-tuned:  ## pick the checkpoint on dev, then score it once on test
-	$(PY) -m capymatch.run_sampler --system capymatch-e1 --checkpoint capy-e1 --split dev
-	$(PY) -m capymatch.run_sampler --system capymatch-e2 --checkpoint capy-e2 --split dev
-	$(PY) -m capymatch.run_sampler --system capymatch --checkpoint capy-e2 --split test
+eval-tuned:  ## pick the checkpoint on dev, then score only that one on test
+	$(PY) -m capymatch.choose --tags capy-e1 capy-e2
 
 evaluate:
 	$(PY) -m capymatch.evaluate --ours capymatch

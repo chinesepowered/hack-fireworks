@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import time
 from pathlib import Path
@@ -112,7 +113,7 @@ def main() -> None:
 
     if not args.no_promote:
         try:
-            fw = sdk.FireworksClient(api_key=service.api_key if hasattr(service, "api_key") else None)
+            fw = sdk.FireworksClient(api_key=os.environ["FIREWORKS_API_KEY"])
             rows_ck = fw.list_training_session_checkpoints(service.training_session_name)
             promotable = [r for r in rows_ck if r.get("promotable")]
             promotable.sort(key=lambda r: r["createTime"])
