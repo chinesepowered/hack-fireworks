@@ -25,6 +25,26 @@
       "unparsed": 0
     },
     {
+      "key": "gpt-6.1-sol",
+      "name": "GPT-6.1 Sol",
+      "kind": "closed frontier (OpenAI)",
+      "accuracy": 0.7211111111111111,
+      "accuracy_ci": [
+        0.6810101555108798,
+        0.7563395810363837
+      ],
+      "macro_f1": 0.7174443709024505,
+      "macro_f1_ci": [
+        0.6770558104095555,
+        0.7520204145181579
+      ],
+      "eligible_precision": 0.7941176470588235,
+      "eligible_recall": 0.72,
+      "cost_per_1k_usd": 1.7978044444444468,
+      "latency_p50_s": 1.393,
+      "unparsed": 0
+    },
+    {
       "key": "gpt-6-luna",
       "name": "GPT-6 Luna",
       "kind": "closed, low-cost tier (OpenAI)",
@@ -67,23 +87,39 @@
   ],
   "headline": {
     "ours": "super-vl-base",
-    "vs": "gpt-6-luna",
-    "acc_delta": -0.014444444444444371,
+    "vs": "gpt-6.1-sol",
+    "acc_delta": -0.02777777777777779,
     "acc_delta_ci": [
-      -0.04111225435669261,
-      0.013318904920458683
+      -0.053334816462736384,
+      0.0
     ],
-    "macro_f1_delta": -0.007686784451748863,
+    "macro_f1_delta": -0.022137266623633578,
     "macro_f1_delta_ci": [
-      -0.0359556424478012,
-      0.02143460956440163
+      -0.04901191654097186,
+      0.00590344237378873
     ],
-    "ours_right_base_wrong": 88,
-    "ours_wrong_base_right": 101,
-    "mcnemar_p": 0.3827845942503986,
-    "cost_ratio": 0.2794457642684227
+    "ours_right_base_wrong": 70,
+    "ours_wrong_base_right": 95,
+    "mcnemar_p": 0.06137832710948886,
+    "cost_ratio": 3.846604993522926
   },
   "comparisons": {
+    "gpt-6.1-sol": {
+      "acc_delta": -0.02777777777777779,
+      "acc_delta_ci": [
+        -0.053334816462736384,
+        0.0
+      ],
+      "macro_f1_delta": -0.022137266623633578,
+      "macro_f1_delta_ci": [
+        -0.04901191654097186,
+        0.00590344237378873
+      ],
+      "ours_right_base_wrong": 70,
+      "ours_wrong_base_right": 95,
+      "mcnemar_p": 0.06137832710948886,
+      "cost_ratio": 3.846604993522926
+    },
     "gpt-6-luna": {
       "acc_delta": -0.014444444444444371,
       "acc_delta_ci": [

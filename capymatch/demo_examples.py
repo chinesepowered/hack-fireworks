@@ -59,7 +59,9 @@ def main() -> None:
             "why": explain(r, r["label"]),
         })
         print(r["nct_id"], r["label"], {k: preds[k][r["id"]]["pred"] for k in preds})
-    out = {"patient": {"id": f"2022-{topic}", "text": rows[0]["patient"]}, "trials": trials,
+    out = {"placeholder": False,
+           "systems": [SYSTEMS[k][0] for k in SHOW if k in preds],
+           "patient": {"id": f"2022-{topic}", "text": rows[0]["patient"]}, "trials": trials,
            "note": "Illustrative patient from the held-out TREC 2022 test set; aggregate metrics are in results/."}
     Path("demo").mkdir(exist_ok=True)
     Path("demo/examples.json").write_text(json.dumps(out, indent=2))

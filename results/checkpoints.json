@@ -1,0 +1,14 @@
+{
+  "capy-e1": {
+    "path": "clai74-1172e7/run-0b4d32378d6c46729566b1341106430a/capy-e1-edb48812",
+    "epoch": 1,
+    "steps": 94,
+    "run_id": "run-0b4d32378d6c46729566b1341106430a",
+    "session": "accounts/clai74-1172e7/trainingSessions/ts-17dba546f76f42fda67f30d944513283",
+    "rank": 16,
+    "lr": 0.0001,
+    "batch_size": 32,
+    "train_rows": 3000,
+    "train_tokens_per_epoch": 2717806
+  }
+}
