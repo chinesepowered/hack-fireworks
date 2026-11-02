@@ -148,9 +148,7 @@ def results_story(s: dict) -> dict:
         win = "tie"
         spoken.append(f"That's statistically tied with {vs['name']}{frontier} at {frac}." if frac
                       else f"That's statistically tied with {vs['name']}.")
-        sym = {"half the cost": "½ the cost", "a third of the cost": "1/3 of the cost", "a quarter of the cost": "¼ of the cost",
-               "a fifth of the cost": "1/5 of the cost"}
-        head = f"Matches {vs['name']}" + (f"\nat ~{sym.get(frac.replace('about ', ''), frac.replace('about ', ''))}" if frac else "")
+        head = f"Matches {vs['name']}" + (f"\nat {frac_short(frac)}" if frac else "")
     callout.insert(0, f"Accuracy {d:+.1f} pts vs {vs_short}\n(95% CI {100 * lo:+.1f} to {100 * hi:+.1f}, p = {h['mcnemar_p']:.2f})")
     callout.insert(0, head)
 
@@ -160,15 +158,27 @@ def results_story(s: dict) -> dict:
         spoken.append(f"And CapyMatch finds the most eligible patients: {pct(rec[h['ours']])} percent recall, versus {pct(rec[vs['key']])} for {vs_short}.")
         callout.append(f"Best eligible recall: {pct(rec[h['ours']])}% (vs {pct(rec[vs['key']])}% for {vs_short})")
 
-    # 4) honest note on a cheaper closed model, if one exists
+    # 4) OpenAI's low-cost model: mentioned only when CapyMatch is significantly more accurate
     luna, cl = sysmap.get("gpt-6-luna"), comps.get("gpt-6-luna")
-    if luna and luna is not vs and luna["cost_per_1k_usd"] < ours["cost_per_1k_usd"]:
-        if luna["accuracy"] < ours["accuracy"]:
-            tail = ", though not significantly." if cl and cl["acc_delta_ci"][0] <= 0 else "."
-            spoken.append(f"OpenAI's cheaper Luna model scores a bit lower{tail}")
-        else:
-            spoken.append("OpenAI's low-cost Luna is cheaper, and about as accurate.")
-    return {"spoken": " ".join(spoken), "callout": callout, "win": win}
+    if luna and luna is not vs and cl and cl["acc_delta_ci"][0] > 0 and cl.get("mcnemar_p", 1.0) < 0.05:
+        spoken.append("It also significantly beats OpenAI's low-cost Luna.")
+    return {"spoken": " ".join(spoken), "callout": callout, "win": win, "frac": frac}
+
+
+FRAC_SYM = {"half the cost": "½ the cost", "a third of the cost": "⅓ of the cost", "a quarter of the cost": "¼ of the cost",
+            "a fifth of the cost": "⅕ of the cost"}
+
+
+def frac_short(frac: str) -> str:
+    """'about a quarter of the cost' -> '~¼ of the cost'."""
+    core = frac.replace("about ", "")
+    return f"~{FRAC_SYM.get(core, core)}"
+
+
+def outro_claim(rs: dict) -> str:
+    """One-line pitch for the outro, chosen by the same CIs as the results scene."""
+    at = f" at {rs['frac']}" if rs.get("frac") else ""
+    return {"win": f"beats the frontier model{at}", "tie": f"frontier-level accuracy{at}"}.get(rs["win"], "")
 
 
 def narration(s: dict) -> list[dict]:
@@ -183,10 +193,15 @@ def narration(s: dict) -> list[dict]:
         ("demo", "Here's a held-out test patient. For each trial, CapyMatch says eligible, excluded, or not relevant, "
                  "and we check it against the expert's label."),
         ("results", rs["spoken"]),
-        ("close", "Caveats: expert labels are noisy, patient notes are synthetic, and this is decision support, not a diagnosis. "
-                  "CapyMatch: fine-tuned open models on Fireworks, helping patients find trials."),
+        ("built", "Under the hood: NVIDIA Nemotron 3.5 Super VL, fine-tuned on Fireworks serverless training in about twenty "
+                  "minutes, with no GPUs to manage. NVIDIA Nemotron 3 Ultra, also on Fireworks, writes each one-line reason."),
+        ("live", "And it already works on live trials: point it at Clinical Trials dot gov, and CapyMatch screens each trial "
+                 "and tells you why."),
+        ("close", (f"CapyMatch: {claim}, built on NVIDIA Nemotron and Fireworks. " if (claim := outro_claim(rs))
+                   else "CapyMatch: built on NVIDIA Nemotron and Fireworks. ")
+                  + "Helping every patient find the right trial. Thanks for watching!"),
     ]
-    caption = lambda t: t.replace("Trek Clinical", "TREC Clinical")
+    caption = lambda t: t.replace("Trek Clinical", "TREC Clinical").replace("Clinical Trials dot gov", "ClinicalTrials.gov")
     return [{"id": k, "spoken": t, "caption": caption(t)} for k, t in lines]
 
 
@@ -417,26 +432,105 @@ def scene_results(s: dict) -> str:
 {foot}{wm}"""
 
 
-def scene_close(s: dict) -> str:
-    items = ["Expert labels are noisy judgments", "Patient notes are synthetic (TREC)", "Decision support, not a diagnosis"]
-    lis = "".join(f'<div class="slide card" style="padding:24px 32px;margin-top:20px;font-size:36px;font-weight:800;animation-delay:{0.5 + i * 0.45:.2f}s">{html.escape(t)}</div>'
-                  for i, t in enumerate(items))
+def scene_built(s: dict) -> str:
+    comps = s.get("comparisons", {})
+    cb = comps.get("super-vl-base")
+    gain = f"+{100 * cb['acc_delta']:.1f} pts from fine-tuning" if cb and cb["acc_delta_ci"][0] > 0 else "LoRA fine-tuned"
+
+    def rows(items, start):
+        return "".join(
+            f'<div class="slide" style="padding:14px 0;border-top:3px solid #F3E8DA;animation-delay:{start + i * 0.45:.2f}s">'
+            f'<div style="font-family:Fredoka;font-weight:600;font-size:36px;line-height:1.15">{html.escape(k)}</div>'
+            f'<div style="font-size:28px;font-weight:700;color:#7A6152;line-height:1.3;margin-top:4px;text-wrap:balance">{html.escape(v)}</div></div>'
+            for i, (k, v) in enumerate(items))
+
+    fw = [("Serverless Training", f"LoRA fine-tune on {s['train_pairs']:,} expert-labeled pairs in ~20 minutes"),
+          ("Serverless sampling", "Evaluation and confidence scores, no deployment needed"),
+          ("Serverless inference", "Runs Nemotron 3 Ultra for the one-line reasons"),
+          ("Model promotion", "Saved as a deployable LoRA model")]
+    nv = [("Nemotron 3.5 Super VL", f"120B MoE, 12B active. The CapyMatch screener ({gain})"),
+          ("Nemotron 3 Ultra", "550B MoE. Writes the criterion-citing reason for each match")]
+    card = lambda x, chip_cls, chip, items, d0: f"""
+<div class="card rise" style="position:absolute;left:{x}px;top:290px;width:800px;padding:32px 40px 18px;animation-delay:{d0 - .35:.2f}s">
+  <span class="chip {chip_cls}">{chip}</span>
+  <div style="margin-top:20px">{rows(items, d0)}</div>
+</div>"""
     return deco() + f"""
-<div style="position:absolute;left:130px;top:150px;width:880px">
-  <div class="kicker rise">Honest tradeoffs</div>
-  <div class="h1 rise" style="animation-delay:.15s;font-size:76px">Good to know</div>
+<div style="position:absolute;left:130px;top:110px"><div class="kicker rise">Under the hood</div>
+<div class="h1 rise" style="animation-delay:.15s;font-size:72px">NVIDIA Nemotron, fine-tuned on Fireworks</div></div>
+{card(130, "c-teal", "Fireworks AI", fw, 0.9)}
+{card(990, "c-brown", "NVIDIA Nemotron", nv, 4.6)}
+<div class="pop" style="position:absolute;left:1490px;top:745px;animation-delay:6.2s"><img class="bob" src="{capy('capy-happy.svg')}" style="width:300px;height:300px"></div>"""
+
+
+def scene_live(s: dict) -> str:
+    live = json.loads((VID / "live_screen.json").read_text())
+    chip_cls = {"eligible": "c-elig", "excluded": "c-excl", "not_relevant": "c-nr"}
+    label_txt = {"eligible": "Eligible", "excluded": "Excluded", "not_relevant": "Not relevant"}
+    mono = "'DejaVu Sans Mono', 'Liberation Mono', monospace"
+    rows = "".join(f"""
+<div class="card slide" style="padding:24px 32px;margin-top:20px;animation-delay:{2.0 + i * 1.7:.2f}s">
+  <div style="display:flex;gap:18px;align-items:center">
+    <span style="flex:none;font-family:{mono};font-weight:700;font-size:25px;color:#9A8273">{html.escape(r['nct_id'])}</span>
+    <span class="chip {chip_cls[r['label']]}" style="flex:none;font-size:25px;padding:8px 20px">{label_txt[r['label']]}</span>
+    <span style="min-width:0;flex:1;font-size:28px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{html.escape(r['title'])}</span>
+  </div>
+  <div class="fade" style="margin-top:12px;font-size:27px;font-weight:700;color:#6B5040;line-height:1.35;animation-delay:{2.6 + i * 1.7:.2f}s">
+    <b style="color:#2FA595">Why:</b> {html.escape(r['why'])}</div>
+</div>""" for i, r in enumerate(live["results"]))
+    return deco() + f"""
+<div style="position:absolute;left:130px;top:110px;width:1270px">
+  <div class="kicker rise">Works on live trials</div>
+  <div class="h1 rise" style="animation-delay:.15s;font-size:70px">Screens real ClinicalTrials.gov records</div>
+  <div class="rise" style="margin-top:28px;background:#3B2A20;color:#FFE9D2;border-radius:22px;padding:20px 28px;font-family:{mono};font-size:22px;white-space:nowrap;overflow:hidden;animation-delay:.6s">
+    <span style="color:#7FD3C5">$</span> {html.escape(live['command'])}</div>
+  <div class="fade" style="margin-top:18px;font-size:28px;font-weight:800;color:#7A6152;animation-delay:1.2s">Patient note: {html.escape(live['patient'])}</div>
+  {rows}
+</div>
+<div class="pop" style="position:absolute;left:1450px;top:500px;animation-delay:3.6s"><img class="bob" src="{capy('capy-happy.svg')}" style="width:400px;height:400px"></div>"""
+
+
+def scene_close(s: dict) -> str:
+    """Outro: the pitch in one line, the key numbers, sponsors, repo, and a capybara sign-off."""
+    rs = results_story(s)
+    sysmap = {x["key"]: x for x in s["systems"]}
+    comps = s.get("comparisons", {})
+    h = s["headline"]
+    ours, vs = sysmap[h["ours"]], sysmap[h["vs"]]
+    claim = {"win": f"Beats {vs['name']}", "tie": "Frontier-level accuracy"}.get(rs["win"], "Fine-tuned open models")
+    sub = f"at {frac_short(rs['frac'])}" if rs.get("frac") and rs["win"] in ("win", "tie") else "on Fireworks"
+    items = [f"{100 * ours['accuracy']:.1f}% accuracy on {s['test_pairs']} held-out pairs"]
+    if rs["win"] in ("win", "tie"):
+        items.append(f"{'Matches' if rs['win'] == 'tie' else 'Beats'} {vs['name']}, the frontier model")
+    cb = comps.get("super-vl-base")
+    if cb and cb["acc_delta_ci"][0] > 0:
+        items.append(f"+{100 * cb['acc_delta']:.1f} pts from fine-tuning NVIDIA Nemotron")
+    rec = {k: x.get("eligible_recall") for k, x in sysmap.items() if x.get("eligible_recall") is not None}
+    if rec and max(rec, key=rec.get) == h["ours"]:
+        items.append(f"Finds the most eligible patients ({100 * rec[h['ours']]:.0f}% recall)")
+    lis = "".join(f'<div class="slide card" style="padding:22px 30px;margin-top:18px;font-size:34px;font-weight:800;animation-delay:{0.9 + i * 0.55:.2f}s">{html.escape(t)}</div>'
+                  for i, t in enumerate(items[:4]))
+    return deco() + f"""
+<div style="position:absolute;left:130px;top:130px;width:940px">
+  <div class="kicker rise">The bottom line</div>
+  <div class="h1 rise" style="animation-delay:.15s;font-size:70px">{html.escape(claim)}<br><span style="color:#2FA595">{html.escape(sub)}</span></div>
   {lis}
 </div>
-<div style="position:absolute;left:1110px;top:120px;width:680px;text-align:center">
-  <div class="pop" style="animation-delay:2.4s"><img class="bob" src="{capy('capy-happy.svg')}" style="width:520px;height:520px"></div>
-  <div class="rise" style="font-family:Fredoka;font-weight:700;font-size:118px;letter-spacing:-2px;line-height:1;animation-delay:2.8s">
+<div style="position:absolute;left:1110px;top:80px;width:700px;text-align:center">
+  <div class="pop" style="animation-delay:2.8s"><img class="bob" src="{capy('capy-happy.svg')}" style="width:480px;height:480px"></div>
+  <div class="rise" style="font-family:Fredoka;font-weight:700;font-size:118px;letter-spacing:-2px;line-height:1;animation-delay:3.2s">
     <span style="color:#5B3A26">Capy</span><span style="color:#2FA595">Match</span></div>
-  <div class="rise" style="font-size:30px;font-weight:800;color:#7A6152;margin-top:16px;animation-delay:3.1s">{REPO_URL}</div>
+  <div style="display:flex;gap:16px;justify-content:center;margin-top:22px">
+    <span class="chip c-brown pop" style="animation-delay:3.6s">NVIDIA Nemotron</span>
+    <span class="chip c-teal pop" style="animation-delay:3.75s">Fireworks AI</span>
+  </div>
+  <div class="rise" style="font-size:30px;font-weight:800;color:#7A6152;margin-top:20px;animation-delay:4.0s">{REPO_URL}</div>
+  <div class="pop" style="font-family:Fredoka;font-weight:700;font-size:50px;color:#C8602A;margin-top:18px;animation-delay:9.6s">Thanks for watching!</div>
 </div>"""
 
 
 SCENE_BUILDERS = {"title": scene_title, "problem": scene_problem, "approach": scene_approach,
-                  "results": scene_results, "close": scene_close}
+                  "results": scene_results, "built": scene_built, "live": scene_live, "close": scene_close}
 
 
 # ----------------------------------------------------------------------------- assembly

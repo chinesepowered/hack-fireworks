@@ -1,0 +1,19 @@
+{
+  "_source": "Real output of `python -m capymatch.screen` (fine-tuned checkpoint + Nemotron 3 Ultra reasons) for TREC 2022 patient 30, run on 2026-11-02 against the live ClinicalTrials.gov API. Shown in the video's 'live trials' scene.",
+  "command": "python -m capymatch.screen --patient-file note.txt --nct NCT03898388 NCT01031576",
+  "patient": "47-year-old woman with knee pain and osteoarthritis",
+  "results": [
+    {
+      "nct_id": "NCT03898388",
+      "label": "eligible",
+      "title": "Correlating the OA Knee Microenvironment to Outcomes After Regenexx-SD Treatment: A Multi-Site Study",
+      "why": "Meets inclusion criteria 3 and 4 (OA pain, swelling, functional disability, and exam findings) and age 35-85; no exclusion criteria met."
+    },
+    {
+      "nct_id": "NCT01031576",
+      "label": "excluded",
+      "title": "Postural Analysis in Patients With Knee Osteoarthritis",
+      "why": "Patient is 47, below the trial's minimum age of 60."
+    }
+  ]
+}
